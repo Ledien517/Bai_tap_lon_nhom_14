@@ -30,4 +30,8 @@ public abstract class Item {
     public String getName() { return name; }
     public double getCurrentHighestBid() { return currentHighestBid; }
     public void setCurrentHighestBid(double currentHighestBid) { this.currentHighestBid = currentHighestBid; }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 }
