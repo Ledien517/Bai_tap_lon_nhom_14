@@ -1,0 +1,22 @@
+[
+  {
+    "artist": "Default",
+    "id": "sda",
+    "name": "1231",
+    "description": "Mô tả",
+    "startingPrice": 1231423.0,
+    "currentHighestBid": 1231423.0,
+    "startTime": "2026-05-01T11:33:46.6057029",
+    "endTime": "2026-05-08T11:33:46.6057029"
+  },
+  {
+    "brand": "Default",
+    "id": "E01",
+    "name": "Lambo",
+    "description": "Mô tả",
+    "startingPrice": 1.0E7,
+    "currentHighestBid": 1.0E7,
+    "startTime": "2026-05-01T11:34:19.8557004",
+    "endTime": "2026-05-08T11:34:19.8557004"
+  }
+]

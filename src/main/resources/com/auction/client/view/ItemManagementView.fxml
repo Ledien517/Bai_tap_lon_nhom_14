@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.ItemManagementController">
+
+    <padding>
+        <Insets bottom="10" left="10" right="10" top="10" />
+    </padding>
+
+    <TableView fx:id="table" prefHeight="300">
+        <columns>
+            <TableColumn fx:id="idCol" prefWidth="100" text="Mã ID" />
+            <TableColumn fx:id="nameCol" prefWidth="250" text="Tên sản phẩm" />
+            <TableColumn fx:id="priceCol" prefWidth="150" text="Giá khởi điểm" />
+        </columns>
+    </TableView>
+
+    <GridPane hgap="10" vgap="10">
+        <padding>
+            <Insets bottom="10" left="10" right="10" top="10" />
+        </padding>
+
+        <Label text="Loại:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <ComboBox fx:id="cbType" prefWidth="150" promptText="21e" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+        <Label text="Mã ID:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <TextField fx:id="txtId" promptText="Nhập ID (VD: A02)" text="sda" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+        <Label text="Tên:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <TextField fx:id="txtName" promptText="Tên sản phẩm" text="1231" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+        <Label text="Giá:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <TextField fx:id="txtPrice" promptText="Giá" text="1231423" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+        <Button onAction="#handleAddItem" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" text="Thêm sản phẩm" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <columnConstraints>
+         <ColumnConstraints />
+         <ColumnConstraints />
+      </columnConstraints>
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
+    </GridPane>
+</VBox>
