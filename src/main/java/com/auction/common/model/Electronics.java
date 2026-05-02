@@ -23,4 +23,5 @@ public class Electronics extends Item {
     public void setWarrantyMonths(int warrantyMonths) {
         this.warrantyMonths = warrantyMonths;
     }
+    public String getType() { return "Electronics"; }
 }

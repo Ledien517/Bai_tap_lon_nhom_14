@@ -14,6 +14,7 @@
         </HBox>
     </top>
 
+<<<<<<< HEAD
     <!-- Phần thân chính -->
     <center>
         <VBox spacing="15" style="-fx-padding: 20;">
@@ -21,6 +22,16 @@
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Loại:"/>
                 <ComboBox fx:id="cbType" prefWidth="120"/>
+=======
+    <TableView fx:id="table" prefHeight="300">
+        <columns>
+            <TableColumn fx:id="idCol" prefWidth="100" text="Mã ID" />
+            <TableColumn fx:id="typeCol" prefWidth="100" text="Loại" />
+            <TableColumn fx:id="nameCol" prefWidth="250" text="Tên sản phẩm" />
+            <TableColumn fx:id="priceCol" prefWidth="150" text="Giá khởi điểm" />
+        </columns>
+    </TableView>
+>>>>>>> ad1dae19891bd60796444b8b669d5e7227119819
 
                 <Label text="ID:"/>
                 <TextField fx:id="txtId" prefWidth="100" promptText="Nhập ID"/>
@@ -35,6 +46,7 @@
                 <Button text="Thêm Sản Phẩm" onAction="#handleAddItem" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
             </HBox>
 
+<<<<<<< HEAD
             <!-- Bảng hiển thị dữ liệu -->
             <TableView fx:id="table" VBox.vgrow="ALWAYS">
                 <columns>
@@ -46,3 +58,27 @@
         </VBox>
     </center>
 </BorderPane>
+=======
+        <Label text="Giá:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <TextField fx:id="txtPrice" promptText="Giá" text="1231423" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+        <Label text="Giá:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+        <TextField fx:id="txtPrice" promptText="Giá" text="1231423" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+        <Label fx:id="lblExtraParam" text="Thông tin thêm:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+        <TextField fx:id="txtExtraParam" promptText="Nhập thông tin" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+        <Button onAction="#handleAddItem" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" text="Thêm sản phẩm" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+      <columnConstraints>
+         <ColumnConstraints />
+         <ColumnConstraints />
+      </columnConstraints>
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
+    </GridPane>
+</VBox>
+>>>>>>> ad1dae19891bd60796444b8b669d5e7227119819

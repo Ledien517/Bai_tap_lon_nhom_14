@@ -10,7 +10,7 @@
     "endTime": "2026-05-08T11:33:46.6057029"
   },
   {
-    "brand": "Default",
+    "warrantyMonths": 0,
     "id": "E01",
     "name": "Lambo",
     "description": "Mô tả",
@@ -18,5 +18,35 @@
     "currentHighestBid": 1.0E7,
     "startTime": "2026-05-01T11:34:19.8557004",
     "endTime": "2026-05-08T11:34:19.8557004"
+  },
+  {
+    "artist": "Default",
+    "id": "TV",
+    "name": "LG",
+    "description": "Mô tả",
+    "startingPrice": 50000.0,
+    "currentHighestBid": 50000.0,
+    "startTime": "2026-05-01T17:29:33.7641266",
+    "endTime": "2026-05-08T17:29:33.7641266"
+  },
+  {
+    "warrantyMonths": 12,
+    "id": "E02",
+    "name": "TV01",
+    "description": "Mô tả",
+    "startingPrice": 1.0000001E7,
+    "currentHighestBid": 1.0000001E7,
+    "startTime": "2026-05-01T17:45:11.4825231",
+    "endTime": "2026-05-08T17:45:11.4825231"
+  },
+  {
+    "brand": "aaaaa",
+    "id": "asdas",
+    "name": "asdasdasd",
+    "description": "Mô tả",
+    "startingPrice": 111.0,
+    "currentHighestBid": 111.0,
+    "startTime": "2026-05-01T17:46:22.7073605",
+    "endTime": "2026-05-08T17:46:22.7073605"
   }
 ]

@@ -23,4 +23,5 @@ public class Art extends Item {
     public void setArtist(String artist) {
         this.artist = artist;
     }
+    public String getType() { return "Art"; }
 }

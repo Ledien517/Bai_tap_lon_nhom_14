@@ -17,7 +17,7 @@ public abstract class Item {
         this.name = name;
         this.description = description;
         this.startingPrice = startingPrice;
-        this.currentHighestBid = startingPrice;
+        this.currentHighestBid = startingPrice; // Lúc mới tạo, giá cao nhất chính là giá khởi điểm
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -25,13 +25,21 @@ public abstract class Item {
     // Phương thức trừu tượng thể hiện tính Đa hình (Polymorphism)
     public abstract void displayItemDetails();
 
-    // Getters and Setters cơ bản
+    // Thêm phương thức này: Các lớp con (Electronics, Art) BẮT BUỘC phải override
+    // để trả về loại của nó (VD: return "Electronics";)
+    public abstract String getType();
+
+    // ================= GETTERS VÀ SETTERS =================
+    // JavaFX cần các getter này để hiển thị dữ liệu lên bảng (Encapsulation)
+
     public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
     public String getName() { return name; }
+
+    // THÊM DÒNG NÀY: Fix lỗi cột giá khởi điểm bị trống
+    public double getStartingPrice() { return startingPrice; }
+
     public double getCurrentHighestBid() { return currentHighestBid; }
     public void setCurrentHighestBid(double currentHighestBid) { this.currentHighestBid = currentHighestBid; }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 }
