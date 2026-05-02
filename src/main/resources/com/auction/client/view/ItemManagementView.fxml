@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.geometry.Insets?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.ItemManagementController">
+<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.auction.client.controller.ItemManagementController">
 
-    <!-- Thanh Header (Chứa nút Đăng xuất) -->
+    <!-- Thanh Header -->
     <top>
         <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #388e3c; -fx-padding: 15;">
             <Label text="QUẢN LÝ SẢN PHẨM (SELLER)" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
@@ -14,7 +15,6 @@
         </HBox>
     </top>
 
-<<<<<<< HEAD
     <!-- Phần thân chính -->
     <center>
         <VBox spacing="15" style="-fx-padding: 20;">
@@ -22,16 +22,6 @@
             <HBox spacing="10" alignment="CENTER_LEFT">
                 <Label text="Loại:"/>
                 <ComboBox fx:id="cbType" prefWidth="120"/>
-=======
-    <TableView fx:id="table" prefHeight="300">
-        <columns>
-            <TableColumn fx:id="idCol" prefWidth="100" text="Mã ID" />
-            <TableColumn fx:id="typeCol" prefWidth="100" text="Loại" />
-            <TableColumn fx:id="nameCol" prefWidth="250" text="Tên sản phẩm" />
-            <TableColumn fx:id="priceCol" prefWidth="150" text="Giá khởi điểm" />
-        </columns>
-    </TableView>
->>>>>>> ad1dae19891bd60796444b8b669d5e7227119819
 
                 <Label text="ID:"/>
                 <TextField fx:id="txtId" prefWidth="100" promptText="Nhập ID"/>
@@ -42,43 +32,21 @@
                 <Label text="Giá:"/>
                 <TextField fx:id="txtPrice" prefWidth="100" promptText="Nhập Giá"/>
 
-                <!-- Nút gọi hàm handleAddItem -->
+                <Label fx:id="lblExtraParam" text="Thông tin thêm:"/>
+                <TextField fx:id="txtExtraParam" prefWidth="150" promptText="Nhập thêm..."/>
+
                 <Button text="Thêm Sản Phẩm" onAction="#handleAddItem" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
             </HBox>
 
-<<<<<<< HEAD
             <!-- Bảng hiển thị dữ liệu -->
             <TableView fx:id="table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="idCol" text="Mã Sản Phẩm" prefWidth="150"/>
-                    <TableColumn fx:id="nameCol" text="Tên Sản Phẩm" prefWidth="300"/>
-                    <TableColumn fx:id="priceCol" text="Giá Khởi Điểm" prefWidth="200"/>
+                    <TableColumn fx:id="idCol" text="Mã ID" prefWidth="100"/>
+                    <TableColumn fx:id="typeCol" text="Loại" prefWidth="100"/>
+                    <TableColumn fx:id="nameCol" text="Tên Sản Phẩm" prefWidth="250"/>
+                    <TableColumn fx:id="priceCol" text="Giá Khởi Điểm" prefWidth="150"/>
                 </columns>
             </TableView>
         </VBox>
     </center>
 </BorderPane>
-=======
-        <Label text="Giá:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <TextField fx:id="txtPrice" promptText="Giá" text="1231423" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-        <Label text="Giá:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-        <TextField fx:id="txtPrice" promptText="Giá" text="1231423" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-        <Label fx:id="lblExtraParam" text="Thông tin thêm:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-        <TextField fx:id="txtExtraParam" promptText="Nhập thông tin" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-
-        <Button onAction="#handleAddItem" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" text="Thêm sản phẩm" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-      <columnConstraints>
-         <ColumnConstraints />
-         <ColumnConstraints />
-      </columnConstraints>
-      <rowConstraints>
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-      </rowConstraints>
-    </GridPane>
-</VBox>
->>>>>>> ad1dae19891bd60796444b8b669d5e7227119819

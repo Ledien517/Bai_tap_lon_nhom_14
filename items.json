@@ -40,7 +40,7 @@
     "endTime": "2026-05-08T17:45:11.4825231"
   },
   {
-    "brand": "aaaaa",
+    "warrantyMonths": 0,
     "id": "asdas",
     "name": "asdasdasd",
     "description": "Mô tả",
@@ -48,5 +48,15 @@
     "currentHighestBid": 111.0,
     "startTime": "2026-05-01T17:46:22.7073605",
     "endTime": "2026-05-08T17:46:22.7073605"
+  },
+  {
+    "artist": "Trịnh Hoàng Dâm",
+    "id": "E001",
+    "name": "Nem chua",
+    "description": "Mô tả",
+    "startingPrice": 36000.0,
+    "currentHighestBid": 36000.0,
+    "startTime": "2026-05-02T21:19:05.7908897",
+    "endTime": "2026-05-09T21:19:05.7908897"
   }
 ]
