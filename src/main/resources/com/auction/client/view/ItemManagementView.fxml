@@ -3,7 +3,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.auction.client.controller.ItemManagementController">
 
     <!-- Thanh Header -->
@@ -18,33 +18,46 @@
     <!-- Phần thân chính -->
     <center>
         <VBox spacing="15" style="-fx-padding: 20;">
-            <!-- Form nhập liệu -->
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <Label text="Loại:"/>
-                <ComboBox fx:id="cbType" prefWidth="120"/>
+            <!-- Form nhập liệu: Chia làm 2 dòng cho thoáng -->
+            <GridPane hgap="10" vgap="10" style="-fx-background-color: #f4f4f4; -fx-padding: 15; -fx-background-radius: 5;">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="50" />
+                    <ColumnConstraints minWidth="150" />
+                    <ColumnConstraints minWidth="50" />
+                    <ColumnConstraints minWidth="150" />
+                    <ColumnConstraints minWidth="100" />
+                    <ColumnConstraints minWidth="150" />
+                </columnConstraints>
 
-                <Label text="ID:"/>
-                <TextField fx:id="txtId" prefWidth="100" promptText="Nhập ID"/>
+                <children>
+                    <Label text="Loại:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <ComboBox fx:id="cbType" prefWidth="150" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
 
-                <Label text="Tên:"/>
-                <TextField fx:id="txtName" prefWidth="150" promptText="Nhập Tên SP"/>
+                    <Label text="Mã ID:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtId" promptText="VD: SP001" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
 
-                <Label text="Giá:"/>
-                <TextField fx:id="txtPrice" prefWidth="100" promptText="Nhập Giá"/>
+                    <Label text="Tên SP:" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtName" promptText="Tên sản phẩm" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
 
-                <Label fx:id="lblExtraParam" text="Thông tin thêm:"/>
-                <TextField fx:id="txtExtraParam" prefWidth="150" promptText="Nhập thêm..."/>
+                    <Label text="Giá khởi điểm:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtPrice" promptText="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
 
-                <Button text="Thêm Sản Phẩm" onAction="#handleAddItem" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
-            </HBox>
+                    <Label fx:id="lblExtraParam" text="Thông tin thêm:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtExtraParam" promptText="Nhập thêm..." GridPane.columnIndex="3" GridPane.rowIndex="1" GridPane.columnSpan="2"/>
+
+                    <Button onAction="#handleAddItem" prefWidth="150" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;" text="THÊM SẢN PHẨM" GridPane.columnIndex="5" GridPane.rowIndex="1" />
+                </children>
+            </GridPane>
 
             <!-- Bảng hiển thị dữ liệu -->
             <TableView fx:id="table" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="idCol" text="Mã ID" prefWidth="100"/>
-                    <TableColumn fx:id="typeCol" text="Loại" prefWidth="100"/>
-                    <TableColumn fx:id="nameCol" text="Tên Sản Phẩm" prefWidth="250"/>
-                    <TableColumn fx:id="priceCol" text="Giá Khởi Điểm" prefWidth="150"/>
+                    <TableColumn fx:id="idCol" prefWidth="80" text="Mã ID" />
+                    <TableColumn fx:id="typeCol" prefWidth="100" text="Loại" />
+                    <TableColumn fx:id="nameCol" prefWidth="250" text="Tên Sản Phẩm" />
+                    <TableColumn fx:id="priceCol" prefWidth="120" text="Giá Hiện Tại" />
+                    <!-- BỔ SUNG CỘT STATUS: Trong Controller của bạn có cột này -->
+                    <TableColumn fx:id="statusCol" prefWidth="120" text="Trạng Thái" />
                 </columns>
             </TableView>
         </VBox>

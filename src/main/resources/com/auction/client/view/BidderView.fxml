@@ -16,13 +16,30 @@
 
     <!-- Phần thân giữa -->
     <center>
-        <VBox alignment="CENTER" spacing="30">
-            <Label text="Tìm kiếm và đặt giá sản phẩm bạn yêu thích" style="-fx-font-size: 16px;"/>
-            <HBox alignment="CENTER" spacing="20">
-                <!-- Các nút chức năng đã được gắn hàm xử lý tương ứng -->
-                <Button text="Tìm kiếm sản phẩm" onAction="#handleSearchItem" prefWidth="160" prefHeight="50" style="-fx-font-size: 14px;"/>
-                <Button text="Phiên đang tham gia" onAction="#handleMyAuctions" prefWidth="160" prefHeight="50" style="-fx-font-size: 14px;"/>
-                <Button text="Nạp tiền / Số dư" onAction="#handleTopUp" prefWidth="160" prefHeight="50" style="-fx-font-size: 14px;"/>
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20;">
+            <!-- Thông tin người dùng -->
+            <HBox spacing="20" alignment="CENTER_LEFT">
+                <Label fx:id="lblUsername" text="Chào, Người dùng" style="-fx-font-weight: bold;"/>
+                <Label text="Số dư: "/>
+                <Label fx:id="lblBalance" text="0.00 $" style="-fx-text-fill: green; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <!-- Bảng danh sách sản phẩm -->
+            <TableView fx:id="table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idCol" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="nameCol" text="Tên sản phẩm" prefWidth="150"/>
+                    <TableColumn fx:id="typeCol" text="Loại" prefWidth="100"/>
+                    <TableColumn fx:id="priceCol" text="Giá hiện tại" prefWidth="100"/>
+                    <TableColumn fx:id="statusCol" text="Trạng thái" prefWidth="100"/>
+                </columns>
+            </TableView>
+
+            <!-- Các nút chức năng -->
+            <HBox alignment="CENTER" spacing="20" style="-fx-padding: 10;">
+                <Button text="Tìm kiếm" onAction="#handleSearchItem" />
+                <Button text="Đặt giá nhanh" onAction="#handlePlaceBid" style="-fx-background-color: #1976d2; -fx-text-fill: white;"/>
+                <Button text="Nạp tiền" onAction="#handleTopUp" />
             </HBox>
         </VBox>
     </center>
