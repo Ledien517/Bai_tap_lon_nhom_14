@@ -18,14 +18,19 @@ import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
 import javafx.animation.Animation;
 import javafx.util.Duration;
+import javafx.scene.layout.VBox;
 
 public class BidderController {
 
     // --- BỒI THÊM: Các UI Components cho TableView và thông tin Bidder ---
-    @FXML private TableView<Item> table;
-    @FXML private TableColumn<Item, String> idCol, typeCol, nameCol, statusCol;
-    @FXML private TableColumn<Item, Double> priceCol;
-    @FXML private Label lblUsername, lblBalance;
+    @FXML
+    private TableView<Item> table;
+    @FXML
+    private TableColumn<Item, String> idCol, typeCol, nameCol, statusCol;
+    @FXML
+    private TableColumn<Item, Double> priceCol;
+    @FXML
+    private Label lblUsername, lblBalance;
 
     // --- BỒI THÊM: Logic Fields ---
     private final ItemDAO itemDAO = new JsonItemDAO();
@@ -129,6 +134,7 @@ public class BidderController {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
     private void showAuctionWindow(Item item) {
         Stage stage = new Stage();
         stage.setTitle("Đấu giá trực tuyến: " + item.getName());
@@ -173,6 +179,7 @@ public class BidderController {
         stage.setScene(new Scene(layout, 400, 500));
         stage.show();
     }
+
     private void processBidLogic(Item item, String amountStr) {
         try {
             double amount = Double.parseDouble(amountStr);
@@ -218,3 +225,4 @@ public class BidderController {
             showAlert(Alert.AlertType.ERROR, "Lỗi logic", e.getMessage());
         }
     }
+}
