@@ -137,14 +137,6 @@ public class Auction {
     }
     public String getInfo() {
         StringBuilder sb = new StringBuilder();
-        sb.append("--- THÔNG TIN PHIÊN ĐẤU GIÁ ---\n");
-        sb.append("Người bán: ").append(seller.getUsername()).append("\n");
-        sb.append("Món đồ: ").append(item.getName()).append("\n");
-        sb.append("Thời gian: ").append(startTime.format(formatter)).append(" -> ").append(endTime.format(formatter)).append("\n");
-        sb.append("Trạng thái: ").append(getStatusDisplay()).append("\n");
-        sb.append("Giá khởi điểm: ").append(String.format("%,.0f", startingPrice)).append("\n");
-        sb.append("Giá hiện tại: ").append(String.format("%,.0f", currentPrice)).append("\n");
-
         sb.append("Danh sách đặt giá:\n");
         if (BidList.isEmpty()) {
             sb.append("- Chưa có người đặt giá.\n");

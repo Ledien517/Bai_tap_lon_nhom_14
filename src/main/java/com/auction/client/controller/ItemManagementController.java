@@ -57,6 +57,7 @@ public class ItemManagementController {
         // Cấu hình cột trạng thái (Status)
         statusCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getStatusDisplay()));
+        minIncCol.setCellValueFactory(new PropertyValueFactory<>("minIncrement"));
 
         // --- 2. Nạp dữ liệu vào bảng ---
         var items = itemDAO.getAllItems();
@@ -160,6 +161,7 @@ public class ItemManagementController {
         txtId.clear();
         txtName.clear();
         txtPrice.clear();
+        txtMinIncrement.clear();
         txtExtraParam.clear();
     }
 }

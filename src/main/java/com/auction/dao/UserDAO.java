@@ -22,13 +22,22 @@ public class UserDAO {
         File file = new File(DATA_FILE);
         if (file.exists()) {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                // Đọc dữ liệu thành công
                 userList = (List<User>) ois.readObject();
             } catch (IOException | ClassNotFoundException e) {
-                System.out.println("Lỗi khi đọc file dữ liệu: " + e.getMessage());
+                System.out.println("Lỗi khi đọc file (file hỏng): " + e.getMessage());
+                // Nếu lỗi, khởi tạo danh sách rỗng để app không bị crash
+                userList = new ArrayList<>();
             }
         } else {
-            // Nếu file chưa tồn tại (chạy lần đầu), tạo tài khoản Admin mặc định và lưu lại
+            // TRƯỜNG HỢP RESET (FILE KHÔNG TỒN TẠI)
+            System.out.println("Không tìm thấy file, đang khởi tạo dữ liệu mặc định...");
+
+            // Đảm bảo danh sách sạch trước khi thêm Admin
+            userList = new ArrayList<>();
             userList.add(new User("admin", "admin123", Role.ADMIN));
+
+            // Lưu lại ngay để tạo file vật lý mới
             saveUsersToFile();
         }
     }

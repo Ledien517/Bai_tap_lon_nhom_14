@@ -31,6 +31,7 @@
                     <TableColumn fx:id="nameCol" text="Tên sản phẩm" prefWidth="150"/>
                     <TableColumn fx:id="typeCol" text="Loại" prefWidth="100"/>
                     <TableColumn fx:id="priceCol" text="Giá hiện tại" prefWidth="100"/>
+                    <TableColumn fx:id="minIncCol" text="Bước giá tối thiểu" prefWidth="120" />
                     <TableColumn fx:id="statusCol" text="Trạng thái" prefWidth="100"/>
                 </columns>
             </TableView>

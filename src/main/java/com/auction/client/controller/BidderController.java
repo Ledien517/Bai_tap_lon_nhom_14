@@ -31,6 +31,7 @@ public class BidderController {
     private TableColumn<Item, String> idCol, typeCol, nameCol, statusCol;
     @FXML
     private TableColumn<Item, Double> priceCol;
+    @FXML private TableColumn<Item, Double> minIncCol;
     @FXML
     private Label lblUsername, lblBalance;
 
@@ -47,12 +48,21 @@ public class BidderController {
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         priceCol.setCellValueFactory(new PropertyValueFactory<>("startingPrice"));
-
+        minIncCol.setCellValueFactory(new PropertyValueFactory<>("minIncrement"));
         typeCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getClass().getSimpleName()));
 
-        statusCol.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getStatusDisplay()));
+        statusCol.setCellValueFactory(cellData -> {
+            Item item = cellData.getValue();
+            // Lấy phiên đấu giá từ MainApp hoặc Map quản lý đấu giá của bạn
+            Auction auction = MainApp.getAuctionForItem(item);
+
+            if (auction != null) {
+                return new SimpleStringProperty(auction.getStatusDisplay());
+            } else {
+                return new SimpleStringProperty("NO AUCTION");
+            }
+        });
 
         // Nạp dữ liệu
         data = FXCollections.observableArrayList(itemDAO.getAllItems());
@@ -201,47 +211,52 @@ public class BidderController {
     }
 
     private void showAuctionWindow(Item item) {
+        Auction auction = MainApp.getAuctionForItem(item);
+        if (auction == null) return;
+
         Stage stage = new Stage();
         stage.setTitle("Đấu giá trực tuyến: " + item.getName());
 
-        // Layout chính cho cửa sổ popup
         VBox layout = new VBox(15);
         layout.setPadding(new javafx.geometry.Insets(20));
 
-        // 1. Hiển thị getInfo() từ Model
-        Label lblTitle = new Label("CHI TIẾT SẢN PHẨM");
+        Label lblTitle = new Label("CHI TIẾT PHIÊN ĐẤU GIÁ");
         lblTitle.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
 
-        TextArea txtInfo = new TextArea(item.getDetails()); // Hoặc gọi auction.getInfo()
-        txtInfo.setEditable(false);
-        txtInfo.setPrefHeight(100);
+        // TextArea hiển thị thông tin tổng hợp (bao gồm cả danh sách đặt giá từ getInfo)
+        TextArea txtAuctionDetails = new TextArea();
+        txtAuctionDetails.setEditable(false);
+        txtAuctionDetails.setPrefHeight(250); // Cho cao lên để hiện được list bid
+        txtAuctionDetails.setText(auction.getInfo()); // Đổ dữ liệu lần đầu
 
-        // 2. Hiển thị BidList (Lịch sử đặt giá)
-        Label lblHistory = new Label("Lịch sử đặt giá (BidList):");
-        ListView<String> bidListView = new ListView<>();
-        bidListView.setPrefHeight(120);
-        // bidListView.getItems().addAll(auction.getBidListAsString()); // Bồi dữ liệu thật ở đây
-
-        // 3. Khu vực thao tác đặt giá và hiển thị số tiền hiện tại
-        Label lblCurrentPrice = new Label("Giá hiện tại: " + item.getCurrentHighestBid() + " $");
-        lblCurrentPrice.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+        Label lblCurrentPrice = new Label("Giá hiện tại: " + auction.getCurrentPrice() + " $");
+        lblCurrentPrice.setStyle("-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 14px;");
 
         TextField txtInputBid = new TextField();
-        txtInputBid.setPromptText("Nhập số tiền đấu giá mới...");
+        txtInputBid.setPromptText("Nhập giá mới (Min: " + (auction.getCurrentPrice() + item.getMinIncrement()) + ")");
 
         Button btnBid = new Button("XÁC NHẬN ĐẶT GIÁ");
         btnBid.setMaxWidth(Double.MAX_VALUE);
         btnBid.setStyle("-fx-background-color: #2e7d32; -fx-text-fill: white; -fx-font-weight: bold;");
 
-        // Xử lý khi nhấn nút Đặt giá ngay trên cửa sổ mới này
+        // --- BỘ CẬP NHẬT TỰ ĐỘNG (REAL-TIME) ---
+        Timeline detailTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            txtAuctionDetails.setText(auction.getInfo());
+            lblCurrentPrice.setText("Giá hiện tại: " + auction.getCurrentPrice() + " $");
+        }));
+        detailTimer.setCycleCount(Animation.INDEFINITE);
+        detailTimer.play();
+
+        // Đảm bảo dừng timer khi đóng cửa sổ con để tránh tốn tài nguyên
+        stage.setOnCloseRequest(e -> detailTimer.stop());
+
         btnBid.setOnAction(e -> {
             processBidLogic(item, txtInputBid.getText());
-            lblCurrentPrice.setText("Giá hiện tại: " + item.getStartingPrice() + " $"); // Cập nhật lại giá hiển thị
+            txtInputBid.clear(); // Xóa ô nhập sau khi bấm
         });
 
-        layout.getChildren().addAll(lblTitle, txtInfo, lblHistory, bidListView, lblCurrentPrice, txtInputBid, btnBid);
-
-        stage.setScene(new Scene(layout, 400, 500));
+        layout.getChildren().addAll(lblTitle, txtAuctionDetails, lblCurrentPrice, txtInputBid, btnBid);
+        stage.setScene(new Scene(layout, 450, 550));
         stage.show();
     }
 
@@ -253,7 +268,6 @@ public class BidderController {
             }
             // 1. Chuyển đổi dữ liệu nhập vào
             double amount = Double.parseDouble(amountStr);
-
             // 2. Tạo đối tượng giao dịch đặt giá mới
             // Cần đảm bảo BidTransaction của bạn nhận (Bidder, double) trong Constructor
             BidTransaction newBid = new BidTransaction(currentBidder, amount);
@@ -281,11 +295,13 @@ public class BidderController {
 
             // 5. Cập nhật dữ liệu hiển thị (UI)
             // Cập nhật lại số dư khả dụng (vì đã bị trừ trong auction.placeBid -> newBid.frozen)
+            item.setStartingPrice(auction.getCurrentPrice());
             lblBalance.setText(String.format("%.2f $", currentBidder.getAvailableBalance()));
 
             // Cập nhật lại giá hiển thị trên bảng chính (lấy giá mới nhất từ Auction)
             item.setCurrentHighestBid(auction.getCurrentPrice());
             table.refresh();
+            updateBalanceUI();
 
             showAlert(Alert.AlertType.INFORMATION, "Thành công", "Bạn đã đặt giá thành công!");
 
