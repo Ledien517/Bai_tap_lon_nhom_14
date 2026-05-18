@@ -11,7 +11,7 @@ public class Vehicle extends Item {
     }
     @Override
     public void displayItemDetails() {
-        System.out.println("[Vehicle] " + name + " - Hãng: " + brand + " - Giá hiện tại: $" + currentHighestBid);
+        System.out.println("[Vehicle] " + getName() + " - Hãng: " + brand + " - Giá khởi điểm: $" + getStartingPrice());
     }
     public String getBrand() {
         return brand;

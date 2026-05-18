@@ -1,166 +1,161 @@
 package com.auction.common.model;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
+
 public class Auction {
     private final Seller seller;
     private final Item item;
     private final double startingPrice;
+    private final double minIncrement;
     private final LocalDateTime startTime;
     private final LocalDateTime endTime;
-    private String status;
-    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private boolean isFinished = false;
+
     private double currentPrice;
-    private final double minIncrement;
+    // volatile giúp mọi luồng (Thread) đều thấy ngay trạng thái mới nhất
+    private volatile String status;
+    private boolean isFinished = false;
     private boolean winProcessed = false;
-    private ArrayList<BidTransaction> BidList = new ArrayList<BidTransaction>();
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-    public Auction (Seller seller, Item item){
+
+    // Khai báo bằng Interface List, khởi tạo bằng ArrayList
+    private final List<BidTransaction> bidList = new ArrayList<>();
+
+    public Auction(Seller seller, Item item) {
         if (seller == null || item == null) {
-            throw new IllegalArgumentException("Seller và Item không được bỏ trống!");
+            throw new IllegalArgumentException("Seller và Item không được bỏ trống!");
         }
         this.seller = seller;
         this.item = item;
-        this.startingPrice = this.item.getStartingPrice();
-        this.minIncrement = this.item.getMinIncrement();
-        this.currentPrice = this.item.getStartingPrice();
-        this.startTime = this.item.startTime;
-        this.endTime = this.item.endTime;
-        startAutoTimer();
+        this.startingPrice = item.getStartingPrice(); // Bắt buộc dùng getter của Item
+        this.minIncrement = item.getMinIncrement();
+        this.currentPrice = item.getStartingPrice();
+        this.startTime = item.getStartTime();
+        this.endTime = item.getEndTime();
+
+        this.status = updateStatus();
     }
-    private String updateStatus(){
+
+    // Hàm cập nhật trạng thái dựa trên thời gian hiện tại
+    public String updateStatus() {
         LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(startTime)){
-            status = "UPCOMING";
-        }
-        else if (now.isAfter(endTime)){
-            status = "FINISHED";
-        }
-        else {
-            status = "ACTIVE";
-        }
-        return status;
+        if (now.isBefore(startTime)) return "UPCOMING";
+        if (now.isAfter(endTime)) return "FINISHED";
+        return "ACTIVE";
     }
-    public void startAutoTimer() {
-        long delayToStart = Duration.between(LocalDateTime.now(), startTime).toMillis();
-        long delayToEnd = Duration.between(LocalDateTime.now(), endTime).toMillis();
-        if (delayToStart > 0) {
-            scheduler.schedule(() -> {
-                this.status = "ACTIVE";
-                System.out.println("--- PHIÊN ĐẤU GIÁ CHÍNH THỨC BẮT ĐẦU! ---");
-            }, delayToStart, TimeUnit.MILLISECONDS);
-        }
-        if (delayToEnd > 0) {
-            scheduler.schedule(this::endAuction, delayToEnd, TimeUnit.MILLISECONDS);
-        } else {
-            endAuction();
-        }
-    }
-    private synchronized void endAuction() {
-        if (!isFinished) {
-            isFinished = true;
-            this.status = "FINISHED";
-            System.out.println("--- PHIÊN ĐẤU GIÁ ĐÃ TỰ ĐỘNG KẾT THÚC! ---");
-            Winner();
-            scheduler.shutdown();
-        }
-    }
-    public synchronized void placeBid(BidTransaction newBid){
-        String currentStatus = updateStatus();
-        if (currentStatus.equals("UPCOMING")){
-            throw new IllegalArgumentException("Phiên đấu giá chưa bắt đầu!");
-        }
-        else if (currentStatus.equals("FINISHED")){
-            throw new IllegalArgumentException("Phiên đấu giá đã kết thúc!");
-        }
-        else if (currentStatus.equals("ACTIVE")){
-            if (BidList.isEmpty() && newBid.getAmount() < startingPrice){
-                throw new IllegalArgumentException("Giá khởi điểm là: " + startingPrice);
-            }
-            else if (BidList.isEmpty() && newBid.getAmount() >= startingPrice){
-                newBid.frozen();
-                BidList.add(newBid);
-                currentPrice = newBid.getAmount();
-            }
-            else{
-                BidTransaction lastBid = BidList.get(BidList.size() - 1);
-                if (lastBid.getBidder().equals(newBid.getBidder())) {
-                    throw new IllegalArgumentException("Bạn đang là người giữ giá cao nhất!");
-                } else {
-                    if (newBid.getAmount() >= currentPrice + minIncrement) {
-                        lastBid.refund();
-                        newBid.frozen();
-                        BidList.add(newBid);
-                        currentPrice = newBid.getAmount();
-                    } else {
-                        throw new IllegalArgumentException("Bạn phải đặt giá cao hơn giá hiện tại ít nhất: " + minIncrement);
-                    }
-                }
-            }
-        }
-    }
-    public synchronized void Winner(){
-        String currentStatus = updateStatus();
-        if (currentStatus.equals("UPCOMING")){
-            throw new IllegalArgumentException("Phiên đấu giá chưa bắt đầu!");
-        }
-        else if (currentStatus.equals("ACTIVE")){
-            throw new IllegalArgumentException("Phiên đấu giá đang diễn ra!");
-        }
-        else{
-            if (BidList.isEmpty()){
-                System.out.println("Phiên đấu giá này đã kết thúc, không có ai tham gia đấu giá!");
-                return;
-            }
-            else{
-                BidTransaction winBid = BidList.get(BidList.size() - 1);
-                Bidder winBidder = winBid.getBidder();
-                System.out.println("Người thắng cuộc: " + winBid.getBidderName() + " với giá: " + winBid.getAmount() + " !");
-                if (!winProcessed) {
-                    seller.receiveBalance(currentPrice);
-                    winBidder.paid(currentPrice);
-                    winProcessed = true;
-                }
-            }
-        }
-    }
-    public double getCurrentPrice() {
-        return this.currentPrice;
-    }
+
+    /**
+     * SỬA LỖI: Thêm phương thức này vì BidderController và ItemManagementController gọi auction.getStatusDisplay()
+     * Nó sẽ gọi lại hàm updateStatus để lấy trạng thái thời gian thực tế mới nhất.
+     */
     public String getStatusDisplay() {
-        updateStatus();
+        this.status = updateStatus();
         return this.status;
     }
-    public String getInfo() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Danh sách đặt giá:\n");
-        if (BidList == null) {
-            BidList = new ArrayList<>();
+
+    /**
+     * Hàm đặt giá - Trái tim của Concurrency
+     * Cần đồng bộ hóa (synchronized) để không bị race condition
+     */
+    public synchronized void placeBid(BidTransaction newBid) {
+        this.status = updateStatus();
+
+        // Chấp nhận trạng thái "ACTIVE" hoặc "RUNNING" tuỳ thuộc vào quy ước giao diện
+        if (!"ACTIVE".equals(status) && !"RUNNING".equals(status)) {
+            throw new IllegalStateException("Phiên đấu giá đang ở trạng thái: " + status);
         }
-        if (BidList.isEmpty()) {
-            sb.append("- Chưa có người đặt giá.\n");
+
+        if (bidList.isEmpty()) {
+            if (newBid.getAmount() < startingPrice) {
+                throw new IllegalArgumentException("Giá khởi điểm là: " + startingPrice);
+            }
+            processNewBid(newBid, null);
         } else {
-            for (BidTransaction bid : BidList) {
-                sb.append("- ").append(bid.getBidderName())
-                        .append(": ").append(bid.getAmount())
-                        .append(" vào lúc: ").append(bid.getTime()).append("\n");
+            BidTransaction lastBid = bidList.get(bidList.size() - 1);
+            if (lastBid.getBidder().equals(newBid.getBidder())) {
+                throw new IllegalArgumentException("Bạn đang là người giữ giá cao nhất!");
+            }
+            if (newBid.getAmount() < currentPrice + minIncrement) {
+                throw new IllegalArgumentException("Bạn phải đặt giá cao hơn giá hiện tại ít nhất: " + minIncrement);
+            }
+            processNewBid(newBid, lastBid);
+        }
+    }
+
+    // Tách logic xử lý tiền vào hàm private cho dễ đọc (Clean Code)
+    private void processNewBid(BidTransaction newBid, BidTransaction lastBid) {
+        if (lastBid != null) {
+            lastBid.refundAmount();
+        }
+        newBid.freezeAmount();
+        bidList.add(newBid);
+        currentPrice = newBid.getAmount();
+
+        // Đồng bộ ngược lại giá mới nhất vào đối tượng Item để phục vụ lưu file JSON
+        item.setStartingPrice(currentPrice);
+        item.setCurrentHighestBid(currentPrice);
+    }
+
+    /**
+     * Xác định người thắng và thanh toán.
+     * Sẽ được gọi bởi AuctionManager (Server) khi hết giờ.
+     */
+    public synchronized void processWinner() {
+        this.status = updateStatus();
+        if ("UPCOMING".equals(status) || "ACTIVE".equals(status) || "RUNNING".equals(status)) {
+            throw new IllegalStateException("Phiên đấu giá chưa kết thúc!");
+        }
+
+        if (!isFinished) {
+            isFinished = true;
+            if (bidList.isEmpty()) {
+                return;
+            }
+
+            if (!winProcessed) {
+                BidTransaction winBid = bidList.get(bidList.size() - 1);
+                seller.receiveBalance(currentPrice);
+                winBid.getBidder().paid(currentPrice);
+                winProcessed = true;
+            }
+        }
+    }
+
+    /**
+     * Trả về danh sách an toàn. Khi 1 thread gọi hàm này,
+     * nó tạo ra 1 bản sao, không lo bị Exception nếu thread khác đang đặt giá.
+     */
+    public synchronized List<BidTransaction> getBidList() {
+        return new ArrayList<>(bidList);
+    }
+
+    /**
+     * SỬA LỖI: Định dạng lại chuỗi thông tin theo đúng yêu cầu hiển thị TextArea của BidderController
+     */
+    public synchronized String getInfo() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== THÔNG TIN PHIÊN ĐẤU GIÁ ===\n");
+        sb.append("Mã sản phẩm: ").append(item.getId()).append("\n");
+        sb.append("Tên sản phẩm: ").append(item.getName()).append("\n");
+        sb.append("Bước giá tối thiểu: ").append(minIncrement).append(" $\n");
+        sb.append("Trạng thái: ").append(getStatusDisplay()).append("\n\n");
+        sb.append("--- LỊCH SỬ ĐẶT GIÁ LUỒNG THỜI GIAN ---\n");
+
+        if (bidList.isEmpty()) {
+            sb.append("- Chưa có người đặt giá cho sản phẩm này.\n");
+        } else {
+            // In ngược từ lượt mới nhất xuống để người xem dễ nhìn thấy trên UI
+            for (int i = bidList.size() - 1; i >= 0; i--) {
+                BidTransaction bid = bidList.get(i);
+                sb.append(String.format(" [%d] Người dùng: %s ---> Đặt giá: %.2f $\n",
+                    (i + 1), bid.getBidderName(), bid.getAmount()));
             }
         }
         return sb.toString();
     }
-    public ArrayList<BidTransaction> getBidList() {
-        return BidList;
-    }
 
-    public void setBidList(ArrayList<BidTransaction> bidList) {
-        if (bidList != null) {
-            this.BidList = bidList;
-        } else {
-            this.BidList = new ArrayList<>(); // Nếu nạp vào null thì thay bằng danh sách rỗng
-        }
-    }
+    // --- CÁC HÀM GETTER ---
+    public double getCurrentPrice() { return currentPrice; }
+    public String getStatus() { return status; }
+    public Item getItem() { return item; }
 }

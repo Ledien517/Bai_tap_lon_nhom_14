@@ -1,75 +1,61 @@
 package com.auction.dao;
 
-import com.auction.common.model.Role;
 import com.auction.common.model.User;
-
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class UserDAO {
-    private static final String DATA_FILE = "users.dat";
-    private static List<User> userList = new ArrayList<>();
+    private static final String FILE_PATH = "users.dat";
 
-    // Khối static này chạy 1 lần khi class được nạp
-    static {
-        loadUsersFromFile();
-    }
-
-    // Đọc dữ liệu từ file
+    // Đọc danh sách tài khoản từ file (Dùng cơ chế Serialization)
     @SuppressWarnings("unchecked")
-    private static void loadUsersFromFile() {
-        File file = new File(DATA_FILE);
-        if (file.exists()) {
-            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-                // Đọc dữ liệu thành công
-                userList = (List<User>) ois.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                System.out.println("Lỗi khi đọc file (file hỏng): " + e.getMessage());
-                // Nếu lỗi, khởi tạo danh sách rỗng để app không bị crash
-                userList = new ArrayList<>();
-            }
-        } else {
-            // TRƯỜNG HỢP RESET (FILE KHÔNG TỒN TẠI)
-            System.out.println("Không tìm thấy file, đang khởi tạo dữ liệu mặc định...");
-
-            // Đảm bảo danh sách sạch trước khi thêm Admin
-            userList = new ArrayList<>();
-            userList.add(new User("admin", "admin123", Role.ADMIN));
-
-            // Lưu lại ngay để tạo file vật lý mới
-            saveUsersToFile();
+    private static synchronized HashMap<String, User> loadUsers() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return new HashMap<>(); // Nếu chưa có file, trả về một danh sách rỗng mới
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            return (HashMap<String, User>) ois.readObject();
+        } catch (Exception e) {
+            // Nếu file bị lỗi cấu trúc hoặc trống, tự động reset về map rỗng để tránh sập app
+            return new HashMap<>();
         }
     }
 
-    // Ghi dữ liệu ra file
-    private static void saveUsersToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(DATA_FILE))) {
-            oos.writeObject(userList);
+    // Ghi danh sách tài khoản ngược lại vào file
+    private static synchronized void saveUsers(HashMap<String, User> users) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+            oos.writeObject(users);
         } catch (IOException e) {
-            System.out.println("Lỗi khi ghi file dữ liệu: " + e.getMessage());
+            System.err.println("[Lỗi DAO] Không thể ghi dữ liệu người dùng: " + e.getMessage());
         }
     }
 
-    public static boolean isUserExists(String username) {
-        for (User user : userList) {
-            if (user.getUsername().equals(username)) return true;
-        }
-        return false;
+    // Kiểm tra tên đăng nhập đã tồn tại trong hệ thống chưa
+    public static synchronized boolean isUserExists(String username) {
+        if (username == null) return false;
+        HashMap<String, User> users = loadUsers();
+        return users.containsKey(username.toLowerCase());
     }
 
-    public static User authenticate(String username, String password) {
-        for (User user : userList) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                return user;
-            }
-        }
-        return null;
+    // Lưu người dùng mới vào hệ thống (Chấp nhận cả đối tượng con là Bidder hoặc Seller nhờ Đa hình)
+    public static synchronized void saveUser(User user) {
+        if (user == null || user.getUsername() == null) return;
+        HashMap<String, User> users = loadUsers();
+        users.put(user.getUsername().toLowerCase(), user);
+        saveUsers(users);
     }
 
-    public static void saveUser(User user) {
-        userList.add(user);
-        // Lưu lại vào file ngay sau khi thêm user mới
-        saveUsersToFile();
+    // Kiểm tra thông tin đăng nhập: Đúng mật khẩu thì trả về Object User, sai trả về null
+    public static synchronized User validateUser(String username, String password) {
+        if (username == null || password == null) return null;
+
+        HashMap<String, User> users = loadUsers();
+        User user = users.get(username.toLowerCase());
+
+        if (user != null && user.getPassword().equals(password)) {
+            return user; // Đăng nhập đúng, trả về toàn bộ thông tin đối tượng (gồm cả vai trò Role)
+        }
+        return null; // Sai mật khẩu hoặc không tồn tại tài khoản
     }
 }

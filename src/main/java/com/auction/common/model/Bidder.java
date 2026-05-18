@@ -1,62 +1,73 @@
 package com.auction.common.model;
 
-public class Bidder extends User{
+public class Bidder extends User {
     private double availableBalance = 0;
     private double frozenBalance = 0;
-    public Bidder (String username, String password, Role role){
-        super(username, password,Role.BIDDER);
+
+    // Loại bỏ tham số Role dư thừa
+    public Bidder(String username, String password) {
+        super(username, password, Role.BIDDER);
     }
-    public double getAvailableBalance(){
+
+    public synchronized double getAvailableBalance() {
         return availableBalance;
     }
-    public double getFrozenBalance(){
+
+    public synchronized double getFrozenBalance() {
         return frozenBalance;
     }
-    public synchronized void deposit(double amount){
-        if (amount <= 0){
-            throw new IllegalArgumentException("Số tiền nhập vào không hợp lệ!");
+
+    public synchronized void deposit(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Số tiền nạp vào không hợp lệ!");
         }
-        else{
-            setAvailableBalance(this.availableBalance + amount);
-        }
+        // Thao tác trực tiếp với biến vì hàm đã được synchronized
+        this.availableBalance += amount;
     }
-    public synchronized void withdraw(double amount){
-        if (amount <= 0){
-            throw new IllegalArgumentException("Số tiền rút không hợp lệ!");
+
+    public synchronized void withdraw(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Số tiền rút không hợp lệ!");
         }
-        if (amount > availableBalance){
-            throw new IllegalArgumentException("Số tiền rút vượt quá số dư khả dụng!");
+        if (amount > availableBalance) {
+            throw new IllegalArgumentException("Số tiền rút vượt quá số dư khả dụng!");
         }
-        else{
-            setAvailableBalance(this.availableBalance - amount);
-        }
+        this.availableBalance -= amount;
     }
-    public synchronized void freezeMoney(double amount){
-        if (amount <= 0){
-            throw new IllegalArgumentException("Số tiền đóng băng không hợp lệ");
+
+    // Đóng băng tiền khi đặt giá (Bid)
+    public synchronized void freezeMoney(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Số tiền đóng băng không hợp lệ!");
         }
-        else{
-            setFrozenBalance(this.frozenBalance + amount);
-            setAvailableBalance(this.availableBalance - amount);
+        if (amount > availableBalance) {
+            throw new IllegalStateException("Không đủ số dư khả dụng để đóng băng!");
         }
+        this.availableBalance -= amount;
+        this.frozenBalance += amount;
     }
+
+    // Hoàn tiền nếu có người trả giá cao hơn
     public synchronized void releaseMoney(double amount) {
         if (amount <= 0) {
-            throw new IllegalArgumentException("Số tiền hoàn trả không hợp lệ");
-        } else {
-            setFrozenBalance(this.frozenBalance - amount);
-            setAvailableBalance(this.availableBalance + amount);
+            throw new IllegalArgumentException("Số tiền hoàn trả không hợp lệ!");
         }
-    }
-    private synchronized void setAvailableBalance(double amount){
-            this.availableBalance = amount;
-    }
-    private synchronized void setFrozenBalance(double amount){
-            this.frozenBalance = amount;
-    }
-    public synchronized void paid(double amount){
-        if (amount > 0 && amount <= this.frozenBalance) {
-            setFrozenBalance(this.frozenBalance - amount);
+        if (amount > frozenBalance) {
+            throw new IllegalStateException("Lỗi hệ thống: Số tiền hoàn lớn hơn số tiền đang đóng băng!");
         }
+        this.frozenBalance -= amount;
+        this.availableBalance += amount;
+    }
+
+    // Thanh toán khi thắng đấu giá
+    public synchronized void paid(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Số tiền thanh toán không hợp lệ!");
+        }
+        if (amount > frozenBalance) {
+            throw new IllegalStateException("Lỗi hệ thống: Số tiền thanh toán lớn hơn tiền đóng băng!");
+        }
+        // Chỉ cần trừ phần tiền đóng băng (tiền này coi như chuyển cho Seller)
+        this.frozenBalance -= amount;
     }
 }

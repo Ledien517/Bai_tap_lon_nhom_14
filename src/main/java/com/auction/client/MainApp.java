@@ -1,7 +1,9 @@
+
 package com.auction.client;
 
 import com.auction.common.model.Auction;
 import com.auction.common.model.Item;
+import com.auction.common.model.User;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -15,13 +17,22 @@ public class MainApp extends Application {
 
     private static Stage primaryStage;
     private static final Map<String, Auction> activeAuctions = new HashMap<>();
+    private static User currentUser; // ← THÊM MỚI: lưu user đang đăng nhập
 
-    // 2. Hàm đăng ký một phiên đấu giá mới
+    // Lưu user vào session
+    public static void setCurrentUser(User user) {
+        currentUser = user;
+    }
+
+    // Lấy user từ session
+    public static User getCurrentUser() {
+        return currentUser;
+    }
+
     public static void registerAuction(String itemId, Auction auction) {
         activeAuctions.put(itemId, auction);
     }
 
-    // 3. Hàm lấy phiên đấu giá dựa trên Item
     public static Auction getAuctionForItem(Item item) {
         if (item == null) return null;
         return activeAuctions.get(item.getId());
@@ -31,7 +42,6 @@ public class MainApp extends Application {
     public void start(Stage stage) throws Exception {
         primaryStage = stage;
         primaryStage.setTitle("Hệ thống Đấu giá Trực tuyến");
-        // Bắt đầu bằng màn hình đăng nhập
         switchScene("/com/auction/client/view/LoginView.fxml");
         primaryStage.show();
     }
@@ -39,9 +49,8 @@ public class MainApp extends Application {
     public static void switchScene(String fxmlPath) throws Exception {
         Parent root = FXMLLoader.load(MainApp.class.getResource(fxmlPath));
 
-        // Màn hình quản lý và Sàn đấu giá thì rộng hơn
         if (fxmlPath.contains("ItemManagement") || fxmlPath.contains("BidderView")) {
-            primaryStage.setScene(new Scene(root, 850, 600)); // Tăng lên 850 để đủ chỗ cho các cột TableView
+            primaryStage.setScene(new Scene(root, 850, 600));
             primaryStage.setTitle("Hệ thống Đấu giá - Nhóm 14");
         } else {
             primaryStage.setScene(new Scene(root, 350, 300));

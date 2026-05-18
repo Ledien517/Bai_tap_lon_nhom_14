@@ -13,7 +13,7 @@ public class Electronics extends Item {
 
     @Override
     public void displayItemDetails() {
-        System.out.println("[Electronics] " + name + " - Bảo hành: " + warrantyMonths + " tháng - Giá hiện tại: $" + currentHighestBid);
+        System.out.println("[Electronics] " + name + " - Bảo hành: " + warrantyMonths + " tháng - Giá hiện tại: $" + getStartingPrice());
     }
 
     public int getWarrantyMonths() {

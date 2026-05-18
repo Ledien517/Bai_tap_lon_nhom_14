@@ -49,14 +49,22 @@ public class ItemManagementController {
 
         // Hiển thị loại sản phẩm dựa trên tên lớp (Art, Vehicle...)
         typeCol.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getClass().getSimpleName()));
+            new SimpleStringProperty(cellData.getValue().getClass().getSimpleName()));
 
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         priceCol.setCellValueFactory(new PropertyValueFactory<>("startingPrice"));
 
-        // Cấu hình cột trạng thái (Status)
-        statusCol.setCellValueFactory(cellData ->
-                new SimpleStringProperty(cellData.getValue().getStatusDisplay()));
+        // SỬA LỖI TẠI ĐÂY: Lấy trạng thái hiển thị từ Auction qua MainApp thay vì gọi trực tiếp từ Item
+        statusCol.setCellValueFactory(cellData -> {
+            Item item = cellData.getValue();
+            Auction auction = MainApp.getAuctionForItem(item);
+            if (auction != null) {
+                return new SimpleStringProperty(auction.getStatusDisplay());
+            } else {
+                return new SimpleStringProperty("NO AUCTION");
+            }
+        });
+
         minIncCol.setCellValueFactory(new PropertyValueFactory<>("minIncrement"));
 
         // --- 2. Nạp dữ liệu vào bảng ---
@@ -68,8 +76,6 @@ public class ItemManagementController {
             data = FXCollections.observableArrayList(items);
         }
         table.setItems(data);
-        data = FXCollections.observableArrayList(itemDAO.getAllItems());
-        table.setItems(data);
 
         // --- 3. Cấu hình ComboBox và Extra Field ---
         cbType.getItems().addAll("Art", "Electronics", "Vehicle");
@@ -80,7 +86,7 @@ public class ItemManagementController {
 
         // --- 4. Bộ cập nhật thời gian thực (Làm mới bảng mỗi giây) ---
         Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(1), e -> table.refresh())
+            new KeyFrame(Duration.seconds(1), e -> table.refresh())
         );
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
@@ -103,13 +109,14 @@ public class ItemManagementController {
 
             // Tạo Item từ Factory
             Item newItem = ItemFactory.createItem(
-                    currentSeller, type, id, name, "Mô tả sản phẩm", price,
-                    LocalDateTime.now(), LocalDateTime.now().plusDays(7), minIncrement,
-                    extraParam
+                currentSeller, type, id, name, "Mô tả sản phẩm", price,
+                LocalDateTime.now(), LocalDateTime.now().plusDays(7), minIncrement,
+                extraParam
             );
 
-            // Khởi tạo Auction để kích hoạt logic nghiệp vụ
+            // Khởi tạo Auction để kích hoạt logic nghiệp vụ và đăng ký vào MainApp hệ thống công khai
             Auction newAuction = new Auction(currentSeller, newItem);
+            MainApp.registerAuction(newItem.getId(), newAuction);
 
             // Lưu và cập nhật UI
             itemDAO.saveItem(newItem);
@@ -119,7 +126,7 @@ public class ItemManagementController {
             clearForm();
 
         } catch (NumberFormatException nfe) {
-            new Alert(Alert.AlertType.ERROR, "Lỗi: Giá và bước giá phải là con số!").show();
+            new Alert(Alert.AlertType.ERROR, "Lỗi: Giá và bước giá phải là con số!").show();
         } catch (Exception ex) {
             new Alert(Alert.AlertType.ERROR, "Lỗi hệ thống: " + ex.getMessage()).show();
         }

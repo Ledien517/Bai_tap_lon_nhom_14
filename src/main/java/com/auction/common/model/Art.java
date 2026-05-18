@@ -13,7 +13,7 @@ public class Art extends Item {
 
     @Override
     public void displayItemDetails() {
-        System.out.println("[Art] " + name + " - Họa sĩ: " + artist + " - Giá hiện tại: $" + currentHighestBid);
+        System.out.println("[Art] " + name + " - Họa sĩ: " + artist + " - Giá hiện tại: $" + getStartingPrice());
     }
     // Thêm 2 hàm này vào cuối class Art
     public String getArtist() {
