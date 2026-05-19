@@ -16,7 +16,8 @@ public class RegisterController {
 
     @FXML
     public void initialize() {
-        cbRole.getItems().addAll(Role.values());
+        // Thay vì addAll(Role.values()), ta chỉ add cứng 2 quyền được phép đăng ký
+        cbRole.getItems().addAll(Role.BIDDER, Role.SELLER);
         cbRole.setValue(Role.BIDDER); // Mặc định là người mua
     }
 

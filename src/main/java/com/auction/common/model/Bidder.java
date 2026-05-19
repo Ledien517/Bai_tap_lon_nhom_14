@@ -47,7 +47,7 @@ public class Bidder extends User {
         this.frozenBalance += amount;
     }
 
-    // Hoàn tiền nếu có người trả giá cao hơn
+    // Hoàn tiền 1 có người trả giá cao hơn
     public synchronized void releaseMoney(double amount) {
         if (amount <= 0) {
             throw new IllegalArgumentException("Số tiền hoàn trả không hợp lệ!");

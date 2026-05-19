@@ -12,8 +12,7 @@ public class Seller extends User {
         if (amount <= 0) {
             throw new IllegalArgumentException("Số tiền nhận không hợp lệ!");
         }
-        // Ở đây em có thể tự định nghĩa thêm thuộc tính balance cho Seller nếu muốn,
-        // Tạm thời chúng ta in ra log để theo dõi.
+        // Tạm thời ta in ra log để theo dõi.
         System.out.println("[Hệ thống] Seller " + getUsername() + " đã nhận thanh toán: " + amount + " $");
     }
 }

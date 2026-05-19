@@ -30,6 +30,7 @@ public class BidderController {
     @FXML private TableColumn<Item, Double> minIncCol;
     @FXML private Label lblUsername, lblBalance;
 
+
     private final ItemDAO itemDAO = new JsonItemDAO();
     private ObservableList<Item> data;
     private Bidder currentBidder;
