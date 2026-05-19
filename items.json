@@ -2,7 +2,6 @@
   {
     "artist": "Lê Diên",
     "seller": {
-      "balance": 0.0,
       "username": "seller",
       "password": "1",
       "role": "SELLER"
@@ -11,10 +10,26 @@
     "name": "ádfgf",
     "description": "Mô tả sản phẩm",
     "startingPrice": 100.0,
-    "currentHighestBid": 100.0,
     "startTime": "2026-05-07T08:39:31.1639346",
     "endTime": "2026-05-14T08:39:31.1639346",
     "minIncrement": 2.0,
-    "BidList": []
+    "currentHighestBid": 100.0
+  },
+  {
+    "artist": "add",
+    "seller": {
+      "username": "aa",
+      "password": "aa",
+      "role": "SELLER"
+    },
+    "id": "3123",
+    "name": "duy",
+    "description": "Mô tả sản phẩm",
+    "startingPrice": 100.0,
+    "startTime": "2026-05-19T18:20:54.9680161",
+    "endTime": "2026-05-26T18:20:54.9680161",
+    "minIncrement": 2.0,
+    "currentHighestBid": 100.0,
+    "bidList": []
   }
 ]

@@ -44,6 +44,9 @@ public class ItemManagementController {
 
     @FXML
     public void initialize() {
+        if (MainApp.getCurrentUser() instanceof Seller) {
+            this.currentSeller = (Seller) MainApp.getCurrentUser();
+        }
         // --- 1. Liên kết các cột dữ liệu ---
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
 
