@@ -3,20 +3,19 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.auction.client.controller.ItemManagementController">
+<BorderPane prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.ItemManagementController">
 
     <top>
         <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #388e3c; -fx-padding: 15;">
-            <Label text="QUẢN LÝ SẢN PHẨM (SELLER)" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Đăng xuất" onAction="#handleLogout" style="-fx-background-color: white; -fx-text-fill: #388e3c; -fx-font-weight: bold;"/>
+            <Label style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;" text="QUẢN LÝ SẢN PHẨM (SELLER)" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Button onAction="#handleLogout" style="-fx-background-color: white; -fx-text-fill: #388e3c; -fx-font-weight: bold;" text="Đăng xuất" />
         </HBox>
     </top>
 
     <center>
         <VBox spacing="15" style="-fx-padding: 20;">
-            <GridPane hgap="10" vgap="10" style="-fx-background-color: #f4f4f4; -fx-padding: 15; -fx-background-radius: 5;">
+            <GridPane hgap="10" style="-fx-background-color: #f4f4f4; -fx-padding: 15; -fx-background-radius: 5;" vgap="10">
                 <columnConstraints>
                     <ColumnConstraints minWidth="100" />
                     <ColumnConstraints minWidth="180" />
@@ -27,30 +26,44 @@
                 </columnConstraints>
 
                 <children>
-                    <Label text="Loại:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                    <ComboBox fx:id="cbType" prefWidth="180" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                    <Label text="Tài sản:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                    <Label fx:id="lblSellerBalance" style="-fx-text-fill: green; -fx-font-weight: bold; -fx-font-size: 14px;" text="0.0 $" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                    <Label text="Mã ID:" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
-                    <TextField fx:id="txtId" promptText="VD: SP001" GridPane.columnIndex="3" GridPane.rowIndex="0"/>
+                    <Label text="Loại:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <ComboBox fx:id="cbType" prefWidth="180" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                    <Label text="Tên SP:" GridPane.columnIndex="4" GridPane.rowIndex="0"/>
-                    <TextField fx:id="txtName" promptText="Tên sản phẩm" GridPane.columnIndex="5" GridPane.rowIndex="0"/>
+                    <Label text="Mã ID:" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                    <TextField fx:id="txtId" promptText="VD: SP001" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
-                    <Label text="Giá khởi điểm:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtPrice" promptText="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <Label text="Tên SP:" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+                    <TextField fx:id="txtName" promptText="Tên sản phẩm" GridPane.columnIndex="5" GridPane.rowIndex="1" />
 
-                    <Label text="Bước giá tối thiểu:" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtMinIncrement" promptText="VD: 10.0" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                    <Label text="Giá khởi điểm:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <TextField fx:id="txtPrice" promptText="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                    <Label fx:id="lblExtraParam" text="Thông tin thêm:" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtExtraParam" promptText="Nhập thêm..." GridPane.columnIndex="5" GridPane.rowIndex="1"/>
+                    <Label text="Bước giá tối thiểu:" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                    <TextField fx:id="txtMinIncrement" promptText="VD: 10.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
 
-                    <HBox alignment="CENTER_RIGHT" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="6" style="-fx-padding: 10 0 0 0;">
-                        <Button onAction="#handleAddItem" prefHeight="35.0" prefWidth="200.0"
-                                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;"
-                                text="THÊM SẢN PHẨM" />
+                    <Label fx:id="lblExtraParam" text="Thông tin thêm:" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+                    <TextField fx:id="txtExtraParam" promptText="Nhập thêm..." GridPane.columnIndex="5" GridPane.rowIndex="2" />
+
+                    <Label text="Ngày bắt đầu:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                    <DatePicker fx:id="dpStartDate" prefWidth="180" promptText="Chọn ngày" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                    <Label text="Ngày kết thúc:" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                    <DatePicker fx:id="dpEndDate" prefWidth="180" promptText="Chọn ngày" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+
+                    <HBox alignment="CENTER_RIGHT" style="-fx-padding: 10 0 0 0;" GridPane.columnIndex="0" GridPane.columnSpan="6" GridPane.rowIndex="4">
+                        <Button onAction="#handleAddItem" prefHeight="35.0" prefWidth="200.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-cursor: hand;" text="THÊM SẢN PHẨM" />
                     </HBox>
                 </children>
+            <rowConstraints>
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+               <RowConstraints />
+            </rowConstraints>
             </GridPane>
 
             <TableView fx:id="table" VBox.vgrow="ALWAYS">
@@ -60,7 +73,10 @@
                     <TableColumn fx:id="nameCol" prefWidth="200" text="Tên Sản Phẩm" />
                     <TableColumn fx:id="priceCol" prefWidth="120" text="Giá Hiện Tại" />
 
-                    <TableColumn fx:id="minIncCol" prefWidth="120" text="Bước Giá Min" />
+                    <TableColumn fx:id="minIncCol" prefWidth="120" text="Bước Giá Nhỏ Nhất" />
+                    
+                    <TableColumn fx:id="startDateCol" prefWidth="120" text="Ngày bắt đầu" />
+                    <TableColumn fx:id="endDateCol" prefWidth="120" text="Ngày kết thúc" />
 
                     <TableColumn fx:id="statusCol" prefWidth="120" text="Trạng Thái" />
                 </columns>

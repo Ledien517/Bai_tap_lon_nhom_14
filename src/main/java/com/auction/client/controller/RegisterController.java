@@ -16,7 +16,7 @@ public class RegisterController {
 
     @FXML
     public void initialize() {
-        cbRole.getItems().addAll(Role.values());
+        cbRole.getItems().addAll(Role.BIDDER, Role.SELLER);
         cbRole.setValue(Role.BIDDER); // Mặc định là người mua
     }
 

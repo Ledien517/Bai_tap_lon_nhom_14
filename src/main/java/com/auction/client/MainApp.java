@@ -35,7 +35,12 @@ public class MainApp extends Application {
 
     public static Auction getAuctionForItem(Item item) {
         if (item == null) return null;
-        return activeAuctions.get(item.getId());
+        Auction auction = activeAuctions.get(item.getId());
+        if (auction == null && item.getSeller() != null) {
+            auction = new Auction(item.getSeller(), item);
+            activeAuctions.put(item.getId(), auction);
+        }
+        return auction;
     }
 
     @Override

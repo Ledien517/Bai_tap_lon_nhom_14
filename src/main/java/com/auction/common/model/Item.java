@@ -22,6 +22,7 @@ public abstract class Item implements Serializable {
     // --- BỒI THÊM: Các thuộc tính phục vụ lưu trữ file JSON và cập nhật giao diện của Controller ---
     protected double currentHighestBid;
     protected List<BidTransaction> bidList = new ArrayList<>();
+    protected boolean isDeletedByAdmin = false;
 
     public Item(Seller seller, String id, String name, String description, double startingPrice,
         LocalDateTime startTime, LocalDateTime endTime, double minIncrement) {
@@ -107,6 +108,9 @@ public abstract class Item implements Serializable {
     public void setBidList(List<BidTransaction> bidList) {
         this.bidList = bidList;
     }
+
+    public boolean isDeletedByAdmin() { return isDeletedByAdmin; }
+    public void setDeletedByAdmin(boolean deletedByAdmin) { this.isDeletedByAdmin = deletedByAdmin; }
 
     @Override
     public String toString() {

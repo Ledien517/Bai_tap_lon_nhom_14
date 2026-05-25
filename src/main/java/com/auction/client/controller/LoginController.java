@@ -31,6 +31,12 @@ public class LoginController {
             User user = UserDAO.validateUser(username, password);
 
             if (user != null) {
+                if (user.isBanned()) {
+                    showAlert(Alert.AlertType.ERROR, "Tài khoản bị cấm",
+                        "Tài khoản của bạn đã bị cấm truy cập vào hệ thống!");
+                    return;
+                }
+
                 showAlert(Alert.AlertType.INFORMATION, "Thành công",
                     "Đăng nhập thành công!\nChào mừng "
                         + user.getUsername() + " (" + user.getRole() + ")");
@@ -39,11 +45,12 @@ public class LoginController {
                 MainApp.setCurrentUser(user);
 
                 switch (user.getRole()) {
-                    // ← FIX 2: Sửa đúng tên file FXML (BidderView, không phải BidderDashboardView)
+                    case ADMIN -> MainApp.switchScene(
+                        "/com/auction/client/view/AdminView.fxml");
                     case BIDDER -> MainApp.switchScene(
                         "/com/auction/client/view/BidderView.fxml");
                     case SELLER -> MainApp.switchScene(
-                        "/com/auction/client/view/AdminView.fxml");
+                        "/com/auction/client/view/ItemManagementView.fxml");
                     default     -> MainApp.switchScene(
                         "/com/auction/client/view/LoginView.fxml");
                 }

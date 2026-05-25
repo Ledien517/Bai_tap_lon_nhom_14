@@ -21,14 +21,17 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.List;
+import java.time.format.DateTimeFormatter;
 
 public class BidderController {
 
     @FXML private TableView<Item> table;
-    @FXML private TableColumn<Item, String> idCol, typeCol, nameCol, statusCol;
+    @FXML private TableColumn<Item, String> idCol, typeCol, nameCol, statusCol, sellerCol;
+    @FXML private TableColumn<Item, String> startDateCol, endDateCol;
     @FXML private TableColumn<Item, Double> priceCol;
     @FXML private TableColumn<Item, Double> minIncCol;
-    @FXML private Label lblUsername, lblBalance;
+    @FXML private Label lblUsername, lblBalance, lblFrozenBalance;
+    @FXML private TextField txtSearch;
 
     private final ItemDAO itemDAO = new JsonItemDAO();
     private ObservableList<Item> data;
@@ -43,6 +46,14 @@ public class BidderController {
         minIncCol.setCellValueFactory(new PropertyValueFactory<>("minIncrement"));
         typeCol.setCellValueFactory(cellData ->
             new SimpleStringProperty(cellData.getValue().getClass().getSimpleName()));
+            
+        if (sellerCol != null) {
+            sellerCol.setCellValueFactory(cellData -> {
+                Seller seller = cellData.getValue().getSeller();
+                return new SimpleStringProperty(seller != null ? seller.getUsername() : "Không rõ");
+            });
+        }
+        
         statusCol.setCellValueFactory(cellData -> {
             Item item = cellData.getValue();
             Auction auction = MainApp.getAuctionForItem(item);
@@ -51,20 +62,30 @@ public class BidderController {
                 : new SimpleStringProperty("NO AUCTION");
         });
 
-        data = FXCollections.observableArrayList(itemDAO.getAllItems());
-        table.setItems(data);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        if (startDateCol != null) {
+            startDateCol.setCellValueFactory(cellData -> {
+                java.time.LocalDateTime start = cellData.getValue().getStartTime();
+                return new SimpleStringProperty(start != null ? start.format(formatter) : "");
+            });
+        }
+        if (endDateCol != null) {
+            endDateCol.setCellValueFactory(cellData -> {
+                java.time.LocalDateTime end = cellData.getValue().getEndTime();
+                return new SimpleStringProperty(end != null ? end.format(formatter) : "");
+            });
+        }
 
-        for (Item item : data) {
-            if (MainApp.getAuctionForItem(item) == null) {
-                if (item.getSeller() != null) {
-                    Auction auction = new Auction(item.getSeller(), item);
-                    MainApp.registerAuction(item.getId(), auction);
-                } else {
-                    System.out.println("Cảnh báo: Sản phẩm "
-                        + item.getId() + " đang thiếu thông tin người bán!");
-                }
+        java.util.List<Item> allItems = itemDAO.getAllItems();
+        java.util.List<Item> activeItems = new java.util.ArrayList<>();
+        if (allItems != null) {
+            for (Item item : allItems) {
+                if (!item.isDeletedByAdmin()) activeItems.add(item);
             }
         }
+        data = FXCollections.observableArrayList(activeItems);
+        table.setItems(data);
+
 
         loadDataFromServer();
 
@@ -79,22 +100,33 @@ public class BidderController {
             new KeyFrame(Duration.seconds(2), e -> {
                 List<Item> latestItems = itemDAO.getAllItems();
                 if (latestItems == null || latestItems.isEmpty()) return;
+                
+                java.util.List<Item> toRemove = new java.util.ArrayList<>();
+                
                 for (Item latest : latestItems) {
                     for (Item current : data) {
-                        if (current.getId().equals(latest.getId())
-                            && latest.getStartingPrice() > current.getStartingPrice()) {
-                            current.setStartingPrice(latest.getStartingPrice());
-                            Auction auction = MainApp.getAuctionForItem(current);
-                            if (auction != null
-                                && latest.getBidList() != null
-                                && !latest.getBidList().isEmpty()) {
-                                auction.getBidList().clear();
-                                auction.getBidList().addAll(latest.getBidList());
+                        if (current.getId().equals(latest.getId())) {
+                            if (latest.isDeletedByAdmin()) {
+                                toRemove.add(current);
+                            } else if (latest.getStartingPrice() > current.getStartingPrice()) {
+                                current.setStartingPrice(latest.getStartingPrice());
+                                Auction auction = MainApp.getAuctionForItem(current);
+                                if (auction != null
+                                    && latest.getBidList() != null
+                                    && !latest.getBidList().isEmpty()) {
+                                    auction.syncBidList(latest.getBidList());
+                                }
                             }
+                            break;
                         }
                     }
                 }
+                
+                if (!toRemove.isEmpty()) {
+                    data.removeAll(toRemove);
+                }
                 table.refresh();
+                updateBalanceUI();
             })
         );
         timeline.setCycleCount(Animation.INDEFINITE);
@@ -135,8 +167,18 @@ public class BidderController {
 
     @FXML
     private void handleSearchItem(ActionEvent event) {
-        showAlert(Alert.AlertType.INFORMATION, "Tính năng đang phát triển",
-            "Mở giao diện Tìm kiếm sản phẩm...");
+        String keyword = txtSearch.getText();
+        List<Item> allItems = itemDAO.getAllItems();
+        if (keyword == null || keyword.trim().isEmpty()) {
+            data.setAll(allItems);
+        } else {
+            String lowerKeyword = keyword.trim().toLowerCase();
+            List<Item> filtered = allItems.stream()
+                .filter(item -> item.getName() != null && item.getName().toLowerCase().contains(lowerKeyword))
+                .collect(java.util.stream.Collectors.toList());
+            data.setAll(filtered);
+        }
+        table.refresh();
     }
 
     @FXML
@@ -151,7 +193,8 @@ public class BidderController {
             showAlert(Alert.AlertType.ERROR, "Lỗi", "Chưa xác định người dùng!");
             return;
         }
-        TextInputDialog dialog = new TextInputDialog("0");
+        TextInputDialog dialog = new TextInputDialog("");
+        dialog.getEditor().setPromptText("Ví dụ: 1000");
         dialog.setTitle("Nạp tiền vào tài khoản");
         dialog.setHeaderText("Số dư hiện tại: "
             + String.format("%.2f $", currentBidder.getAvailableBalance()));
@@ -160,9 +203,39 @@ public class BidderController {
             try {
                 double amount = Double.parseDouble(amountStr);
                 currentBidder.deposit(amount);
+                com.auction.dao.UserDAO.saveUser(currentBidder); // LƯU VÀO DATABASE
                 updateBalanceUI();
                 showAlert(Alert.AlertType.INFORMATION, "Thành công",
                     String.format("Đã nạp thành công %.2f $ vào tài khoản.", amount));
+            } catch (NumberFormatException e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi nhập liệu",
+                    "Vui lòng nhập một con số hợp lệ!");
+            } catch (IllegalArgumentException e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", e.getMessage());
+            }
+        });
+    }
+
+    @FXML
+    private void handleWithdraw(ActionEvent event) {
+        if (currentBidder == null) {
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Chưa xác định người dùng!");
+            return;
+        }
+        TextInputDialog dialog = new TextInputDialog("");
+        dialog.getEditor().setPromptText("Ví dụ: 500");
+        dialog.setTitle("Rút tiền từ tài khoản");
+        dialog.setHeaderText("Số dư khả dụng: "
+            + String.format("%.2f $", currentBidder.getAvailableBalance()));
+        dialog.setContentText("Vui lòng nhập số tiền muốn rút:");
+        dialog.showAndWait().ifPresent(amountStr -> {
+            try {
+                double amount = Double.parseDouble(amountStr);
+                currentBidder.withdraw(amount);
+                com.auction.dao.UserDAO.saveUser(currentBidder); // LƯU VÀO DATABASE
+                updateBalanceUI();
+                showAlert(Alert.AlertType.INFORMATION, "Thành công",
+                    String.format("Đã rút thành công %.2f $ khỏi tài khoản.", amount));
             } catch (NumberFormatException e) {
                 showAlert(Alert.AlertType.ERROR, "Lỗi nhập liệu",
                     "Vui lòng nhập một con số hợp lệ!");
@@ -252,6 +325,7 @@ public class BidderController {
             auction.placeBid(newBid);
             item.setStartingPrice(auction.getCurrentPrice());
             item.setCurrentHighestBid(auction.getCurrentPrice());
+            itemDAO.updateItem(item); // Lưu lại giá mới vào file JSON
             table.refresh();
             updateBalanceUI();
             showAlert(Alert.AlertType.INFORMATION, "Thành công",
@@ -270,6 +344,9 @@ public class BidderController {
     private void updateBalanceUI() {
         if (currentBidder != null && lblBalance != null) {
             lblBalance.setText(String.format("%.2f $", currentBidder.getAvailableBalance()));
+            if (lblFrozenBalance != null) {
+                lblFrozenBalance.setText(String.format("%.2f $", currentBidder.getFrozenBalance()));
+            }
         }
     }
 

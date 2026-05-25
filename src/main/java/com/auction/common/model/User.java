@@ -9,6 +9,7 @@ public abstract class User implements Serializable {
     private String username;
     private String password;
     private Role role;
+    private boolean isBanned = false;
 
     public User(String username, String password, Role role) {
         if (username == null || username.trim().isEmpty()) {
@@ -22,4 +23,6 @@ public abstract class User implements Serializable {
     public String getUsername() { return username; }
     public String getPassword() { return password; }
     public Role getRole() { return role; }
+    public boolean isBanned() { return isBanned; }
+    public void setBanned(boolean banned) { isBanned = banned; }
 }

@@ -11,15 +11,25 @@ public class UserDAO {
     @SuppressWarnings("unchecked")
     private static synchronized HashMap<String, User> loadUsers() {
         File file = new File(FILE_PATH);
+        HashMap<String, User> users;
         if (!file.exists()) {
-            return new HashMap<>(); // Nếu chưa có file, trả về một danh sách rỗng mới
+            users = new HashMap<>(); // Nếu chưa có file, trả về một danh sách rỗng mới
+        } else {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                users = (HashMap<String, User>) ois.readObject();
+            } catch (Exception e) {
+                // Nếu file bị lỗi cấu trúc hoặc trống, tự động reset về map rỗng để tránh sập app
+                users = new HashMap<>();
+            }
         }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (HashMap<String, User>) ois.readObject();
-        } catch (Exception e) {
-            // Nếu file bị lỗi cấu trúc hoặc trống, tự động reset về map rỗng để tránh sập app
-            return new HashMap<>();
+        
+        // Luôn đảm bảo tài khoản superadmin tồn tại trong hệ thống
+        if (!users.containsKey("superadmin")) {
+            users.put("superadmin", new com.auction.common.model.Admin("superadmin", "admin1"));
+            saveUsers(users); // Lưu lại ngay để các lần sau không cần tạo
         }
+        
+        return users;
     }
 
     // Ghi danh sách tài khoản ngược lại vào file
@@ -57,5 +67,10 @@ public class UserDAO {
             return user; // Đăng nhập đúng, trả về toàn bộ thông tin đối tượng (gồm cả vai trò Role)
         }
         return null; // Sai mật khẩu hoặc không tồn tại tài khoản
+    }
+
+    // Lấy toàn bộ người dùng để Admin quản lý
+    public static synchronized java.util.List<User> getAllUsersList() {
+        return new java.util.ArrayList<>(loadUsers().values());
     }
 }

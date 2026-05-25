@@ -1,20 +1,36 @@
 [
   {
-    "artist": "Lê Diên",
+    "warrantyMonths": 3,
     "seller": {
       "balance": 0.0,
-      "username": "seller",
+      "username": "seller2",
       "password": "1",
-      "role": "SELLER"
+      "role": "SELLER",
+      "isBanned": false
     },
-    "id": "1234",
-    "name": "ádfgf",
+    "id": "001",
+    "name": "Iphone100 super mega pro max",
     "description": "Mô tả sản phẩm",
-    "startingPrice": 100.0,
-    "currentHighestBid": 100.0,
-    "startTime": "2026-05-07T08:39:31.1639346",
-    "endTime": "2026-05-14T08:39:31.1639346",
-    "minIncrement": 2.0,
-    "BidList": []
+    "startingPrice": 10010.0,
+    "startTime": "2026-05-25T16:59:03.6914396",
+    "endTime": "2026-05-25T23:59:59",
+    "minIncrement": 10.0,
+    "currentHighestBid": 10010.0,
+    "bidList": [
+      {
+        "bidder": {
+          "availableBalance": 9.99869E7,
+          "frozenBalance": 13100.0,
+          "username": "bidder1",
+          "password": "1",
+          "role": "BIDDER",
+          "isBanned": false
+        },
+        "amount": 10000.0,
+        "bidTime": "2026-05-25T23:09:32.1722438",
+        "formattedTime": "25/05/2026 23:09:32"
+      }
+    ],
+    "isDeletedByAdmin": false
   }
 ]

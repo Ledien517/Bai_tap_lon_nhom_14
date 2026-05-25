@@ -51,7 +51,7 @@ public class JsonItemDAO implements ItemDAO {
         }
     }
     @Override
-    public void saveItem(Item item) {
+    public synchronized void saveItem(Item item) {
         // Thêm sản phẩm vào danh sách
         database.add(item);
 
@@ -89,7 +89,7 @@ public class JsonItemDAO implements ItemDAO {
     }
 
     @Override
-    public void deleteItem(String id) {
+    public synchronized void deleteItem(String id) {
         // Xóa sản phẩm khỏi danh sách
         database.removeIf(item -> item.getId().equals(id));
 

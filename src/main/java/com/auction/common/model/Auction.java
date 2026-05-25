@@ -3,6 +3,7 @@ package com.auction.common.model;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.auction.dao.UserDAO;
 
 public class Auction {
     private final Seller seller;
@@ -34,6 +35,11 @@ public class Auction {
         this.endTime = item.getEndTime();
 
         this.status = updateStatus();
+
+        if (item.getBidList() != null && !item.getBidList().isEmpty()) {
+            this.bidList.addAll(item.getBidList());
+            this.currentPrice = this.bidList.get(this.bidList.size() - 1).getAmount();
+        }
     }
 
     // Hàm cập nhật trạng thái dựa trên thời gian hiện tại
@@ -86,14 +92,17 @@ public class Auction {
     private void processNewBid(BidTransaction newBid, BidTransaction lastBid) {
         if (lastBid != null) {
             lastBid.refundAmount();
+            UserDAO.saveUser(lastBid.getBidder());
         }
         newBid.freezeAmount();
+        UserDAO.saveUser(newBid.getBidder());
         bidList.add(newBid);
         currentPrice = newBid.getAmount();
 
         // Đồng bộ ngược lại giá mới nhất vào đối tượng Item để phục vụ lưu file JSON
         item.setStartingPrice(currentPrice);
         item.setCurrentHighestBid(currentPrice);
+        item.getBidList().add(newBid);
     }
 
     /**
@@ -116,7 +125,23 @@ public class Auction {
                 BidTransaction winBid = bidList.get(bidList.size() - 1);
                 seller.receiveBalance(currentPrice);
                 winBid.getBidder().paid(currentPrice);
+                UserDAO.saveUser(seller);
+                UserDAO.saveUser(winBid.getBidder());
                 winProcessed = true;
+            }
+        }
+    }
+
+    /**
+     * Hủy phiên đấu giá và hoàn tiền cho người trả giá cao nhất.
+     */
+    public synchronized void cancelAndRefund() {
+        if (!isFinished) {
+            isFinished = true;
+            if (!bidList.isEmpty()) {
+                BidTransaction lastBid = bidList.get(bidList.size() - 1);
+                lastBid.refundAmount();
+                UserDAO.saveUser(lastBid.getBidder());
             }
         }
     }
@@ -127,6 +152,16 @@ public class Auction {
      */
     public synchronized List<BidTransaction> getBidList() {
         return new ArrayList<>(bidList);
+    }
+
+    public synchronized void syncBidList(List<BidTransaction> newList) {
+        this.bidList.clear();
+        if (newList != null) {
+            this.bidList.addAll(newList);
+            if (!this.bidList.isEmpty()) {
+                this.currentPrice = this.bidList.get(this.bidList.size() - 1).getAmount();
+            }
+        }
     }
 
     /**
@@ -144,6 +179,11 @@ public class Auction {
         if (bidList.isEmpty()) {
             sb.append("- Chưa có người đặt giá cho sản phẩm này.\n");
         } else {
+            if ("FINISHED".equals(getStatusDisplay())) {
+                BidTransaction winBid = bidList.get(bidList.size() - 1);
+                sb.append(String.format("🌟 NGƯỜI CHIẾN THẮNG: %s (%.2f $) 🌟\n\n", 
+                    winBid.getBidderName(), winBid.getAmount()));
+            }
             // In ngược từ lượt mới nhất xuống để người xem dễ nhìn thấy trên UI
             for (int i = bidList.size() - 1; i >= 0; i--) {
                 BidTransaction bid = bidList.get(i);

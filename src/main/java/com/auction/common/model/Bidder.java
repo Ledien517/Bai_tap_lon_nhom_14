@@ -1,6 +1,7 @@
 package com.auction.common.model;
 
 public class Bidder extends User {
+    private static final long serialVersionUID = 1L;
     private double availableBalance = 0;
     private double frozenBalance = 0;
 
