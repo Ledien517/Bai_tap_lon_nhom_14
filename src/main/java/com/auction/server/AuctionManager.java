@@ -2,7 +2,7 @@ package com.auction.server;
 
 import com.auction.common.model.*;
 import com.auction.common.protocol.Response;
-import com.auction.dao.JsonItemDAO;
+import com.auction.dao.MySqlItemDAO;
 import com.auction.dao.UserDAO;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class AuctionManager {
 
     private final List<ClientHandler> connectedClients = new CopyOnWriteArrayList<>();
     private final Map<String, Auction> activeAuctions = new ConcurrentHashMap<>();
-    private final JsonItemDAO itemDAO = new JsonItemDAO();
+    private final MySqlItemDAO itemDAO = new MySqlItemDAO();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     private AuctionManager() {
