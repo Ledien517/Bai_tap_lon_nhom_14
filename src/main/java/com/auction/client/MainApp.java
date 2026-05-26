@@ -61,13 +61,19 @@
     
         public static void switchScene(String fxmlPath) throws Exception {
             Parent root = FXMLLoader.load(MainApp.class.getResource(fxmlPath));
-    
+            Scene scene;
             if (fxmlPath.contains("ItemManagement") || fxmlPath.contains("BidderView")) {
-                primaryStage.setScene(new Scene(root, 850, 600));
+                scene = new Scene(root, 900, 650);
                 primaryStage.setTitle("Hệ thống Đấu giá - Nhóm 14");
             } else {
-                primaryStage.setScene(new Scene(root, 350, 300));
+                scene = new Scene(root, 450, 400);
             }
+            
+            // Tải file CSS dùng chung
+            String css = MainApp.class.getResource("/com/auction/client/css/styles.css").toExternalForm();
+            scene.getStylesheets().add(css);
+            
+            primaryStage.setScene(scene);
         }
     
         public static Stage getPrimaryStage() {

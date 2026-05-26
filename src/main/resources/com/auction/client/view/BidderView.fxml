@@ -3,45 +3,56 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.BidderController">
+<BorderPane prefHeight="650.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.BidderController" styleClass="root">
     <!-- Thanh Header -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #1976d2; -fx-padding: 15;">
-            <Label text="SÀN ĐẤU GIÁ (BIDDER)" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+        <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-bar">
+            <Label text="SÀN ĐẤU GIÁ" styleClass="title-label"/>
+            <Label text="|  Người Mua" styleClass="subtitle-label"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <!-- Nút đăng xuất đã gọi hàm handleLogout -->
-            <Button text="Đăng xuất" onAction="#handleLogout" style="-fx-background-color: white; -fx-text-fill: #1976d2; -fx-font-weight: bold;"/>
+            <!-- Nút đăng xuất -->
+            <Button text="Đăng xuất" onAction="#handleLogout" styleClass="button-danger"/>
         </HBox>
     </top>
 
     <!-- Phần thân giữa -->
     <center>
-        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20;">
-            <!-- Thông tin người dùng -->
-            <HBox spacing="20" alignment="CENTER_LEFT">
-                <Label fx:id="lblUsername" text="Chào, Người dùng" style="-fx-font-weight: bold;"/>
-                <Label text="Số dư: "/>
-                <Label fx:id="lblBalance" text="0.00 $" style="-fx-text-fill: green; -fx-font-weight: bold;"/>
+        <VBox spacing="15" style="-fx-padding: 20;">
+            <!-- Cụm thông tin người dùng và công cụ -->
+            <HBox spacing="20" alignment="CENTER_LEFT" styleClass="card">
+                <VBox spacing="5">
+                    <Label text="Thông tin tài khoản" styleClass="subtitle-label"/>
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label fx:id="lblUsername" text="Chào, Người dùng" styleClass="label" style="-fx-font-weight: bold;"/>
+                        <Label text="•" styleClass="subtitle-label"/>
+                        <Label text="Số dư khả dụng: " styleClass="label"/>
+                        <Label fx:id="lblBalance" text="0.00 $" style="-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 16px;"/>
+                    </HBox>
+                </VBox>
+                
+                <Region HBox.hgrow="ALWAYS"/>
+                
+                <HBox spacing="15" alignment="CENTER_RIGHT">
+                    <Button text="Nạp tiền" onAction="#handleTopUp" styleClass="button-link"/>
+                    <Button text="Tìm kiếm" onAction="#handleSearchItem" styleClass="button"/>
+                    <Button text="Đặt giá ngay" onAction="#handlePlaceBid" styleClass="button"/>
+                </HBox>
             </HBox>
 
             <!-- Bảng danh sách sản phẩm -->
-            <TableView fx:id="table" VBox.vgrow="ALWAYS">
-                <columns>
-                    <TableColumn fx:id="idCol" text="ID" prefWidth="50"/>
-                    <TableColumn fx:id="nameCol" text="Tên sản phẩm" prefWidth="150"/>
-                    <TableColumn fx:id="typeCol" text="Loại" prefWidth="100"/>
-                    <TableColumn fx:id="priceCol" text="Giá hiện tại" prefWidth="100"/>
-                    <TableColumn fx:id="minIncCol" text="Bước giá tối thiểu" prefWidth="120" />
-                    <TableColumn fx:id="statusCol" text="Trạng thái" prefWidth="100"/>
-                </columns>
-            </TableView>
-
-            <!-- Các nút chức năng -->
-            <HBox alignment="CENTER" spacing="20" style="-fx-padding: 10;">
-                <Button text="Tìm kiếm" onAction="#handleSearchItem" />
-                <Button text="Đặt giá nhanh" onAction="#handlePlaceBid" style="-fx-background-color: #1976d2; -fx-text-fill: white;"/>
-                <Button text="Nạp tiền" onAction="#handleTopUp" />
-            </HBox>
+            <VBox VBox.vgrow="ALWAYS" styleClass="card" style="-fx-padding: 10;">
+                <Label text="Danh sách sản phẩm đang mở bán" styleClass="subtitle-label" style="-fx-padding: 0 0 10 5;"/>
+                <TableView fx:id="table" VBox.vgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="idCol" text="ID" prefWidth="60"/>
+                        <TableColumn fx:id="nameCol" text="Tên sản phẩm" prefWidth="250"/>
+                        <TableColumn fx:id="typeCol" text="Loại" prefWidth="120"/>
+                        <TableColumn fx:id="priceCol" text="Giá hiện tại" prefWidth="120"/>
+                        <TableColumn fx:id="minIncCol" text="Bước giá tối thiểu" prefWidth="140" />
+                        <TableColumn fx:id="statusCol" text="Trạng thái" prefWidth="120"/>
+                    </columns>
+                </TableView>
+            </VBox>
         </VBox>
     </center>
 </BorderPane>

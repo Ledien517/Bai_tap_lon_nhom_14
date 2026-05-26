@@ -5,23 +5,38 @@
 <?import javafx.collections.FXCollections?>
 <?import com.auction.common.model.Role?>
 
-<GridPane alignment="CENTER" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.RegisterController">
-    <padding><Insets bottom="20" left="20" right="20" top="20"/></padding>
+<StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.RegisterController" styleClass="root">
+    <VBox alignment="CENTER" spacing="20" maxWidth="350" maxHeight="380">
+        <!-- Khu vực Tiêu đề -->
+        <VBox alignment="CENTER" spacing="5">
+            <Label text="ĐĂNG KÝ TÀI KHOẢN" styleClass="title-label" />
+            <Label text="Tham gia hệ thống đấu giá ngay" styleClass="subtitle-label" />
+        </VBox>
 
-    <Label text="ĐĂNG KÝ TÀI KHOẢN" style="-fx-font-size: 18px; -fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER"/>
+        <!-- Form đăng ký trong thẻ Card -->
+        <VBox styleClass="card" spacing="15">
+            <VBox spacing="5">
+                <Label text="Tên đăng nhập" styleClass="label" />
+                <TextField fx:id="txtUsername" promptText="Nhập tên tài khoản" />
+            </VBox>
+            
+            <VBox spacing="5">
+                <Label text="Mật khẩu" styleClass="label" />
+                <PasswordField fx:id="txtPassword" promptText="Nhập mật khẩu" />
+            </VBox>
 
-    <Label text="Tên đăng nhập:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-    <TextField fx:id="txtUsername" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-
-    <Label text="Mật khẩu:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-    <PasswordField fx:id="txtPassword" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-
-    <Label text="Vai trò:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-    <ComboBox fx:id="cbRole" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-
-    <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="4">
-        <Button text="Đăng ký" onAction="#handleRegister"/>
-    </HBox>
-
-    <Button text="Đã có tài khoản? Đăng nhập" onAction="#handleGoToLogin" GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="2" GridPane.halignment="CENTER"/>
-</GridPane>
+            <VBox spacing="5">
+                <Label text="Vai trò" styleClass="label" />
+                <ComboBox fx:id="cbRole" maxWidth="Infinity" styleClass="combo-box" />
+            </VBox>
+            
+            <Region minHeight="10" />
+            
+            <Button text="Đăng ký" onAction="#handleRegister" maxWidth="Infinity" styleClass="button" />
+            
+            <HBox alignment="CENTER">
+                <Button text="Đã có tài khoản? Đăng nhập" onAction="#handleGoToLogin" styleClass="button-link" />
+            </HBox>
+        </VBox>
+    </VBox>
+</StackPane>

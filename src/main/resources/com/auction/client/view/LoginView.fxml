@@ -4,31 +4,33 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane alignment="CENTER" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.LoginController">
-    <padding><Insets bottom="20" left="20" right="20" top="20" /></padding>
+<StackPane xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.LoginController" styleClass="root">
+    <VBox alignment="CENTER" spacing="20" maxWidth="350" maxHeight="320">
+        <!-- Khu vực Tiêu đề -->
+        <VBox alignment="CENTER" spacing="5">
+            <Label text="HỆ THỐNG ĐẤU GIÁ" styleClass="title-label" />
+            <Label text="Đăng nhập để tiếp tục" styleClass="subtitle-label" />
+        </VBox>
 
-    <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="ĐĂNG NHẬP" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="0" />
-
-    <Label text="Tên đăng nhập:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-    <TextField fx:id="txtUsername" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-    <Label text="Mật khẩu:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-    <PasswordField fx:id="txtPassword" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-    <HBox alignment="CENTER_RIGHT" spacing="10" GridPane.columnIndex="1" GridPane.rowIndex="3">
-        <Button onAction="#handleLogin" text="Đăng nhập" />
-    </HBox>
-
-    <Button onAction="#handleGoToRegister" text="Chưa có tài khoản? Đăng ký" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.halignment="CENTER" GridPane.rowIndex="4" />
-    <columnConstraints>
-        <ColumnConstraints />
-        <ColumnConstraints />
-    </columnConstraints>
-    <rowConstraints>
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-        <RowConstraints />
-    </rowConstraints>
-</GridPane>
+        <!-- Form đăng nhập trong thẻ Card -->
+        <VBox styleClass="card" spacing="15">
+            <VBox spacing="5">
+                <Label text="Tên đăng nhập" styleClass="label" />
+                <TextField fx:id="txtUsername" promptText="Nhập tài khoản" />
+            </VBox>
+            
+            <VBox spacing="5">
+                <Label text="Mật khẩu" styleClass="label" />
+                <PasswordField fx:id="txtPassword" promptText="Nhập mật khẩu" />
+            </VBox>
+            
+            <Region minHeight="10" />
+            
+            <Button text="Đăng nhập" onAction="#handleLogin" maxWidth="Infinity" styleClass="button" />
+            
+            <HBox alignment="CENTER">
+                <Button text="Chưa có tài khoản? Đăng ký ngay" onAction="#handleGoToRegister" styleClass="button-link" />
+            </HBox>
+        </VBox>
+    </VBox>
+</StackPane>
