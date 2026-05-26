@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8831d463-3aa1-41dc-ad26-804ccdc7916a" name="Changes" comment="Lan dau" />
+    <list default="true" id="001b4d73-5aed-4c78-ac7b-cd7f7ad86078" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -33,38 +33,27 @@
   }
 }</component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 8
+  &quot;associatedIndex&quot;: 6
 }</component>
-  <component name="ProjectId" id="3CyBXV25pkkDf0J3IfzcS5wbJys" />
+  <component name="ProjectId" id="3EBHfIzjkrGhOWNh50EwkV4zG3Z" />
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;Application.AuctionDemo.executor&quot;: &quot;Run&quot;,
-    &quot;Application.AuctionRoomController.executor&quot;: &quot;Run&quot;,
-    &quot;Application.Launcher.executor&quot;: &quot;Run&quot;,
+    &quot;Application.AuctionServer.executor&quot;: &quot;Run&quot;,
     &quot;Application.MainApp.executor&quot;: &quot;Run&quot;,
-    &quot;Application.ServerApp.executor&quot;: &quot;Run&quot;,
-    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
-    &quot;Maven.auction-system [org.openjfx:javafx-maven-plugin:0.0.8:run].executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;dev-trinh-duy&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Aieo/Bai_tap_lon_nhom_14&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;
   }
 }</component>
-  <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\Bai_tap_lon_nhom_14\src\main\resources\fxml" />
-      <recent name="D:\Bai_tap_lon_nhom_14\src\main\resources" />
-    </key>
-  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -74,25 +63,12 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="8831d463-3aa1-41dc-ad26-804ccdc7916a" name="Changes" comment="" />
-      <created>1777347970223</created>
+      <changelist id="001b4d73-5aed-4c78-ac7b-cd7f7ad86078" name="Changes" comment="" />
+      <created>1779645144456</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1777347970223</updated>
+      <updated>1779645144456</updated>
     </task>
-    <task id="LOCAL-00001" summary="Lan dau">
-      <option name="closed" value="true" />
-      <created>1777474913204</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1777474913204</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
     <servers />
-  </component>
-  <component name="VcsManagerConfiguration">
-    <MESSAGE value="Lan dau" />
-    <option name="LAST_COMMIT_MESSAGE" value="Lan dau" />
   </component>
 </project>

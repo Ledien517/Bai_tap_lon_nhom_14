@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="500.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.auction.client.controller.BidderController">
+    <!-- Thanh Header -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="20" style="-fx-background-color: #1976d2; -fx-padding: 15;">
+            <Label text="SÀN ĐẤU GIÁ (BIDDER)" style="-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <!-- Nút đăng xuất đã gọi hàm handleLogout -->
+            <Button text="Đăng xuất" onAction="#handleLogout" style="-fx-background-color: white; -fx-text-fill: #1976d2; -fx-font-weight: bold;"/>
+        </HBox>
+    </top>
+
+    <!-- Phần thân giữa -->
+    <center>
+        <VBox alignment="CENTER" spacing="10" style="-fx-padding: 20;">
+            <!-- Thông tin người dùng -->
+            <HBox spacing="20" alignment="CENTER_LEFT">
+                <Label fx:id="lblUsername" text="Chào, Người dùng" style="-fx-font-weight: bold;"/>
+                <Label text="Số dư: "/>
+                <Label fx:id="lblBalance" text="0.00 $" style="-fx-text-fill: green; -fx-font-weight: bold;"/>
+            </HBox>
+
+            <!-- Bảng danh sách sản phẩm -->
+            <TableView fx:id="table" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="idCol" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="nameCol" text="Tên sản phẩm" prefWidth="150"/>
+                    <TableColumn fx:id="typeCol" text="Loại" prefWidth="100"/>
+                    <TableColumn fx:id="priceCol" text="Giá hiện tại" prefWidth="100"/>
+                    <TableColumn fx:id="minIncCol" text="Bước giá tối thiểu" prefWidth="120" />
+                    <TableColumn fx:id="statusCol" text="Trạng thái" prefWidth="100"/>
+                </columns>
+            </TableView>
+
+            <!-- Các nút chức năng -->
+            <HBox alignment="CENTER" spacing="20" style="-fx-padding: 10;">
+                <Button text="Tìm kiếm" onAction="#handleSearchItem" />
+                <Button text="Đặt giá nhanh" onAction="#handlePlaceBid" style="-fx-background-color: #1976d2; -fx-text-fill: white;"/>
+                <Button text="Nạp tiền" onAction="#handleTopUp" />
+            </HBox>
+        </VBox>
+    </center>
+</BorderPane>
