@@ -2,8 +2,12 @@ package com.auction.common.model;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+
+// ZoneId dùng thống nhất toàn bộ so sánh thời gian theo giờ Việt Nam
+// vì Server Railway chạy UTC còn người dùng nhập giờ VN (UTC+7)
 
 public class Auction implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -48,9 +52,11 @@ public class Auction implements Serializable {
         this.status = updateStatus();
     }
 
-    // Hàm cập nhật trạng thái dựa trên thời gian hiện tại
+    private static final ZoneId VN_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+
+    // Hàm cập nhật trạng thái dựa trên thời gian hiện tại (giờ Việt Nam)
     public String updateStatus() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(VN_ZONE);
         if (now.isBefore(startTime)) return "UPCOMING";
         if (now.isAfter(endTime)) return "FINISHED";
         return "ACTIVE";
@@ -79,7 +85,7 @@ public class Auction implements Serializable {
 
         // --- THUẬT TOÁN ANTI-SNIPING ---
         // Nếu có lượt đặt giá hợp lệ trong 30 giây cuối cùng, tự động gia hạn thêm 60 giây
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(VN_ZONE);
         if (now.isAfter(endTime.minusSeconds(30)) && now.isBefore(endTime)) {
             this.endTime = this.endTime.plusSeconds(60);
             this.item.setEndTime(this.endTime);

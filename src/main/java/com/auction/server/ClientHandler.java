@@ -100,6 +100,10 @@ public class ClientHandler implements Runnable {
                     handleUpdateUser(data);
                     break;
 
+                case "DELETE_ITEM":
+                    handleDeleteItem(data);
+                    break;
+
                 default:
                     sendResponse(new Response("ERROR", "Yêu cầu không được hỗ trợ: " + type, null));
                     break;
@@ -216,6 +220,20 @@ public class ClientHandler implements Runnable {
         UserDAO.saveUser(user);
         sendResponse(new Response("SUCCESS", "Cập nhật tài khoản thành công!", user));
         System.out.println("[ClientHandler] Đã cập nhật thông tin user: " + user.getUsername());
+    }
+
+    private void handleDeleteItem(Object data) throws IOException {
+        if (currentUser == null || currentUser.getRole() != Role.SELLER) {
+            sendResponse(new Response("ERROR", "Lỗi phân quyền: Chỉ Người bán mới được xóa sản phẩm!", null));
+            return;
+        }
+        String itemId = (String) data;
+        try {
+            AuctionManager.getInstance().deleteItem(itemId, currentUser.getUsername());
+            sendResponse(new Response("SUCCESS", "Đã xóa phiên đấu giá thành công!", null));
+        } catch (Exception e) {
+            sendResponse(new Response("ERROR", e.getMessage(), null));
+        }
     }
 
     // Gửi response đơn lẻ về cho client này (Thread-safe)

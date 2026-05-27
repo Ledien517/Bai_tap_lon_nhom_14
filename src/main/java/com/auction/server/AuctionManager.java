@@ -228,6 +228,30 @@ public class AuctionManager {
         }, 1, 1, TimeUnit.SECONDS); // Quét mỗi giây một lần để đảm bảo chính xác thời gian thực
     }
 
+    /**
+     * Xóa phiên đấu giá (chỉ Seller sở hữu mới được xóa, và chỉ khi chưa có lượt đặt giá)
+     */
+    public synchronized void deleteItem(String itemId, String sellerUsername) {
+        Auction auction = activeAuctions.get(itemId);
+        if (auction == null) {
+            throw new IllegalArgumentException("Không tìm thấy phiên đấu giá với mã: " + itemId);
+        }
+        // Kiểm tra quyền sở hữu
+        if (!auction.getItem().getSeller().getUsername().equals(sellerUsername)) {
+            throw new IllegalStateException("Bạn không có quyền xóa phiên đấu giá này!");
+        }
+        // Kiểm tra trạng thái: chỉ xóa được nếu chưa có ai đặt giá
+        if (!auction.getBidList().isEmpty()) {
+            throw new IllegalStateException("Không thể xóa! Đã có người đặt giá cho sản phẩm này.");
+        }
+        // Xóa khỏi bộ nhớ và Database
+        activeAuctions.remove(itemId);
+        itemDAO.deleteItem(itemId);
+        System.out.println("[AuctionManager] Đã xóa phiên đấu giá: " + itemId + " bởi Seller: " + sellerUsername);
+        // Broadcast thông báo đến tất cả Client
+        broadcast("DELETE_AUCTION", "Phiên đấu giá " + auction.getItem().getName() + " đã bị xóa.", itemId);
+    }
+
     public void shutdown() {
         scheduler.shutdown();
     }
