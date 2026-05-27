@@ -37,36 +37,13 @@
             return activeAuctions.get(item.getId());
         }
     
-        // === TỰ ĐỘNG LẤY ĐỊA CHỈ NGROK TỪ MẠNG ===
-        private String[] fetchServerAddress() {
-            String host = "localhost"; // Mặc định nếu mất mạng
-            int port = 8888;
-            try {
-                // BƯỚC 1: Tạo 1 file text trên pastebin.com với nội dung là địa chỉ ngrok (vd: 0.tcp.ap.ngrok.io:12345)
-                // BƯỚC 2: Bấm nút 'raw' trên pastebin, copy đường link dán đè lên đoạn link URL này:
-                java.net.URL url = new java.net.URL("https://pastebin.com/raw/DÁN_LINK_RAW_CỦA_BẠN_VÀO_ĐÂY"); 
-                java.util.Scanner s = new java.util.Scanner(url.openStream());
-                if (s.hasNextLine()) {
-                    String line = s.nextLine().trim();
-                    if (line.contains(":")) {
-                        String[] parts = line.split(":");
-                        host = parts[0];
-                        port = Integer.parseInt(parts[1]);
-                        System.out.println("[AutoConfig] Đã tải thành công IP Server: " + host + ":" + port);
-                    }
-                }
-                s.close();
-            } catch (Exception e) {
-                System.out.println("[AutoConfig] Không thể tải IP từ mạng, dùng localhost mặc định.");
-            }
-            return new String[]{host, String.valueOf(port)};
-        }
-
         @Override
         public void start(Stage stage) throws Exception {
             try {
-                String[] serverConfig = fetchServerAddress();
-                NetworkClient.getInstance().connect(serverConfig[0], Integer.parseInt(serverConfig[1]));
+                String host = "zephyr.proxy.rlwy.net";
+                int port = 51807;
+                NetworkClient.getInstance().connect(host, port);
+                System.out.println("[AutoConfig] Đã kết nối tới Server trên Railway: " + host + ":" + port);
             } catch (Exception e) {
                 System.err.println("[MainApp Lỗi] Không thể kết nối tới Server: " + e.getMessage());
             }
@@ -84,13 +61,19 @@
     
         public static void switchScene(String fxmlPath) throws Exception {
             Parent root = FXMLLoader.load(MainApp.class.getResource(fxmlPath));
-    
+            Scene scene;
             if (fxmlPath.contains("ItemManagement") || fxmlPath.contains("BidderView")) {
-                primaryStage.setScene(new Scene(root, 850, 600));
+                scene = new Scene(root, 900, 650);
                 primaryStage.setTitle("Hệ thống Đấu giá - Nhóm 14");
             } else {
-                primaryStage.setScene(new Scene(root, 350, 300));
+                scene = new Scene(root, 450, 400);
             }
+            
+            // Tải file CSS dùng chung
+            String css = MainApp.class.getResource("/com/auction/client/css/styles.css").toExternalForm();
+            scene.getStylesheets().add(css);
+            
+            primaryStage.setScene(scene);
         }
     
         public static Stage getPrimaryStage() {

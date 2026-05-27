@@ -100,7 +100,7 @@ public class AuctionManager {
         // Đăng ký auto-bid vào phiên đấu giá, có thể kích hoạt các lượt trả giá tự động
         auction.registerAutoBid(autoBid);
         
-        // Cập nhật lại file JSON vì giá có thể đã bị thay đổi bởi AutoBidding
+        // Cập nhật lại Database vì giá có thể đã bị thay đổi bởi AutoBidding
         itemDAO.updateItem(auction.getItem());
         
         // Cập nhật số dư người thắng hiện tại và người bị vượt giá nếu có
@@ -140,12 +140,12 @@ public class AuctionManager {
         // Thực hiện đặt giá (synchronized bên trong Auction.java)
         auction.placeBid(bid);
 
-        // Lưu thông tin đấu giá mới vào file JSON thông qua DAO
+        // Lưu thông tin đấu giá mới vào Database thông qua DAO
         Item item = auction.getItem();
         // Không gọi item.getBidList().add(bid) ở đây nữa vì Auction.placeBid(bid) đã thêm trực tiếp vào item rồi.
         itemDAO.updateItem(item);
 
-        // Lưu thông tin số dư khả dụng/đóng băng mới của Bidder vào users.dat
+        // Lưu thông tin số dư khả dụng/đóng băng mới của Bidder vào Database
         UserDAO.saveUser(bid.getBidder());
         
         // Nếu có bidder cũ bị trả lại tiền đóng băng, ta cũng lưu lại thông tin bidder cũ đó
@@ -200,10 +200,10 @@ public class AuctionManager {
                             try {
                                 auction.processWinner();
                                 
-                                // Cập nhật lại trạng thái sản phẩm vào file JSON
+                                // Cập nhật lại trạng thái sản phẩm vào Database
                                 itemDAO.updateItem(auction.getItem());
 
-                                // Lưu thông tin số dư mới của Seller và Bidder thắng cuộc vào file users.dat
+                                // Lưu thông tin số dư mới của Seller và Bidder thắng cuộc vào Database
                                 List<BidTransaction> bids = auction.getBidList();
                                 if (!bids.isEmpty()) {
                                     BidTransaction winBid = bids.get(bids.size() - 1);
