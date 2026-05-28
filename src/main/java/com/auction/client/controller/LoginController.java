@@ -59,6 +59,8 @@ public class LoginController {
                                     "/com/auction/client/view/BidderView.fxml");
                                 case SELLER -> MainApp.switchScene(
                                     "/com/auction/client/view/ItemManagementView.fxml");
+                                case ADMIN  -> MainApp.switchScene(
+                                    "/com/auction/client/view/AdminView.fxml");
                                 default     -> MainApp.switchScene(
                                     "/com/auction/client/view/LoginView.fxml");
                             }

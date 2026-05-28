@@ -9,6 +9,7 @@ public abstract class User implements Serializable {
     private String username;
     private String password;
     private Role role;
+    private String status = "ACTIVE"; // Trạng thái mặc định là ACTIVE
 
     public User(String username, String password, Role role) {
         if (username == null || username.trim().isEmpty()) {
@@ -22,6 +23,9 @@ public abstract class User implements Serializable {
     public String getUsername() { return username; }
     public String getPassword() { return password; }
     public Role getRole() { return role; }
+    
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     @Override
     public boolean equals(Object obj) {

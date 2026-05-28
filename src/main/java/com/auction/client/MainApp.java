@@ -47,7 +47,7 @@
             // Kết nối Server trên background thread để cửa sổ hiện lên ngay lập tức
             new Thread(() -> {
                 try {
-                    String host = "zephyr.proxy.rlwy.net";;
+                    String host = "zephyr.proxy.rlwy.net";
                     int port = 51807;
                     NetworkClient.getInstance().connect(host, port);
                     System.out.println("[AutoConfig] Đã kết nối tới Server: " + host + ":" + port);
@@ -66,7 +66,10 @@
         public static void switchScene(String fxmlPath) throws Exception {
             Parent root = FXMLLoader.load(MainApp.class.getResource(fxmlPath));
             Scene scene;
-            if (fxmlPath.contains("ItemManagement") || fxmlPath.contains("BidderView")) {
+            if (fxmlPath.contains("AdminView")) {
+                scene = new Scene(root, 1050, 680);
+                primaryStage.setTitle("Hệ thống Đấu giá - Admin");
+            } else if (fxmlPath.contains("ItemManagement") || fxmlPath.contains("BidderView")) {
                 scene = new Scene(root, 900, 650);
                 primaryStage.setTitle("Hệ thống Đấu giá - Nhóm 14");
             } else {

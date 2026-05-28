@@ -58,6 +58,8 @@ public class Auction implements Serializable {
         }
 
         this.status = updateStatus();
+        this.winProcessed = item.isWinProcessed();
+        this.isFinished = "FINISHED".equals(this.status);
     }
 
     private static final ZoneId VN_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
@@ -127,6 +129,7 @@ public class Auction implements Serializable {
         }
         newBid.freezeAmount();
         bidList.add(newBid);
+        item.getBidList().add(newBid);
         currentPrice = newBid.getAmount();
 
         // Đồng bộ ngược lại giá mới nhất vào đối tượng Item để phục vụ lưu file JSON
@@ -219,6 +222,7 @@ public class Auction implements Serializable {
         if (!isFinished) {
             isFinished = true;
             winProcessed = true; // Đánh dấu đã xử lý để Monitor không lặp lại
+            item.setWinProcessed(true); // Đồng bộ vào Item để lưu xuống DB
 
             if (bidList.isEmpty()) {
                 return;

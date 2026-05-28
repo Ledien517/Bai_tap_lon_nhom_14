@@ -31,7 +31,7 @@ public class MySqlItemDAO implements ItemDAO {
              Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
         } catch (SQLException e) {
-            System.err.println("[MySqlItemDAO Lỗi] Không thể tạo bảng: " + e.getMessage());
+            throw new RuntimeException("Không thể tạo bảng auction_items: " + e.getMessage(), e);
         }
     }
 
@@ -49,7 +49,7 @@ public class MySqlItemDAO implements ItemDAO {
             pstmt.executeUpdate();
             
         } catch (SQLException e) {
-            System.err.println("[MySqlItemDAO Lỗi] Không thể lưu Item: " + e.getMessage());
+            throw new RuntimeException("Lỗi lưu sản phẩm '" + item.getName() + "': " + e.getMessage(), e);
         }
     }
 
@@ -67,7 +67,7 @@ public class MySqlItemDAO implements ItemDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("[MySqlItemDAO Lỗi] Không thể lấy Item: " + e.getMessage());
+            throw new RuntimeException("Lỗi truy vấn sản phẩm ID '" + id + "': " + e.getMessage(), e);
         }
         return null;
     }
@@ -88,7 +88,7 @@ public class MySqlItemDAO implements ItemDAO {
                 }
             }
         } catch (SQLException e) {
-            System.err.println("[MySqlItemDAO Lỗi] Không thể lấy danh sách Item: " + e.getMessage());
+            throw new RuntimeException("Lỗi lấy danh sách sản phẩm đấu giá: " + e.getMessage(), e);
         }
         return items;
     }
@@ -108,7 +108,7 @@ public class MySqlItemDAO implements ItemDAO {
             pstmt.executeUpdate();
             
         } catch (SQLException e) {
-            System.err.println("[MySqlItemDAO Lỗi] Không thể xóa Item: " + e.getMessage());
+            throw new RuntimeException("Lỗi xóa sản phẩm ID '" + id + "': " + e.getMessage(), e);
         }
     }
 }

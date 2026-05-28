@@ -10,6 +10,12 @@ public class Seller extends User {
         super(username, password, Role.SELLER);
     }
 
+    // Constructor có thêm tham số balance phục vụ đọc dữ liệu từ DB
+    public Seller(String username, String password, double balance) {
+        super(username, password, Role.SELLER);
+        this.balance = balance;
+    }
+
     public synchronized double getBalance() {
         return balance;
     }
@@ -21,5 +27,17 @@ public class Seller extends User {
         }
         this.balance += amount;
         System.out.println("[Hệ thống] Seller " + getUsername() + " đã nhận thanh toán: " + amount + " $. Số dư mới: " + this.balance + " $");
+    }
+
+    // Hàm rút tiền của Seller
+    public synchronized void withdraw(double amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Số tiền rút phải lớn hơn 0!");
+        }
+        if (amount > this.balance) {
+            throw new IllegalArgumentException("Số dư không đủ để thực hiện rút tiền!");
+        }
+        this.balance -= amount;
+        System.out.println("[Hệ thống] Seller " + getUsername() + " đã rút tiền: " + amount + " $. Số dư mới: " + this.balance + " $");
     }
 }

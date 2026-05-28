@@ -55,17 +55,33 @@ public class DatabaseManager {
                     "password VARCHAR(255) NOT NULL, " +
                     "role VARCHAR(50) NOT NULL, " +
                     "available_balance DOUBLE DEFAULT 0, " +
-                    "frozen_balance DOUBLE DEFAULT 0" +
+                    "frozen_balance DOUBLE DEFAULT 0, " +
+                    "status VARCHAR(50) DEFAULT 'ACTIVE'" +
                     ")";
             stmt.executeUpdate(createUsersTable);
             
-            // Cập nhật bảng users (cho các DB cũ chưa có cột này)
+            // Cập nhật bảng users (cho các DB cũ chưa có các cột này) - PHẢI CHẠY TRƯỚC insert để tránh lỗi Unknown Column
             try {
                 stmt.executeUpdate("ALTER TABLE users ADD COLUMN available_balance DOUBLE DEFAULT 0");
+            } catch (SQLException ignored) {
+                // Ignore if column already exists
+            }
+            try {
                 stmt.executeUpdate("ALTER TABLE users ADD COLUMN frozen_balance DOUBLE DEFAULT 0");
             } catch (SQLException ignored) {
-                // Ignore if columns already exist
+                // Ignore if column already exists
             }
+            try {
+                stmt.executeUpdate("ALTER TABLE users ADD COLUMN status VARCHAR(50) DEFAULT 'ACTIVE'");
+            } catch (SQLException ignored) {
+                // Ignore if column already exists
+            }
+
+            // Tạo tài khoản superadmin mặc định nếu chưa tồn tại, hoặc cập nhật lại đúng thông tin nếu đã tồn tại
+            String insertSuperAdmin = "INSERT INTO users (username, password, role, available_balance, frozen_balance, status) " +
+                    "VALUES ('superadmin', 'admin123', 'ADMIN', 0, 0, 'ACTIVE') " +
+                    "ON DUPLICATE KEY UPDATE password = 'admin123', role = 'ADMIN', status = 'ACTIVE'";
+            stmt.executeUpdate(insertSuperAdmin);
 
 
             // 2. Tạo bảng Items

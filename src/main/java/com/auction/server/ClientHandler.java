@@ -104,6 +104,18 @@ public class ClientHandler implements Runnable {
                     handleDeleteItem(data);
                     break;
 
+                case "GET_ALL_USERS":
+                    handleGetAllUsers();
+                    break;
+
+                case "BAN_USER":
+                    handleBanUser(data);
+                    break;
+
+                case "UNBAN_USER":
+                    handleUnbanUser(data);
+                    break;
+
                 default:
                     sendResponse(new Response("ERROR", "Yêu cầu không được hỗ trợ: " + type, null));
                     break;
@@ -125,6 +137,11 @@ public class ClientHandler implements Runnable {
 
         User user = UserDAO.validateUser(username, password);
         if (user != null) {
+            if ("BANNED".equalsIgnoreCase(user.getStatus())) {
+                sendResponse(new Response("ERROR", "Tài khoản của bạn đã bị khóa (Banned)!", null));
+                System.out.println("[ClientHandler] Banned user '" + username + "' cố gắng đăng nhập nhưng đã bị chặn.");
+                return;
+            }
             this.currentUser = user; // Lưu session
             sendResponse(new Response("SUCCESS", "Đăng nhập thành công!", user));
             System.out.println("[ClientHandler] User '" + username + "' đã đăng nhập.");
@@ -234,6 +251,41 @@ public class ClientHandler implements Runnable {
         } catch (Exception e) {
             sendResponse(new Response("ERROR", e.getMessage(), null));
         }
+    }
+
+    private void handleGetAllUsers() throws IOException {
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+            sendResponse(new Response("ERROR", "Lỗi phân quyền: Chỉ Quản trị viên mới được xem danh sách người dùng!", null));
+            return;
+        }
+        List<User> users = UserDAO.getAllUsers();
+        sendResponse(new Response("SUCCESS", "Lấy danh sách người dùng thành công!", users));
+    }
+
+    private void handleBanUser(Object data) throws IOException {
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+            sendResponse(new Response("ERROR", "Lỗi phân quyền: Chỉ Quản trị viên mới được ban người dùng!", null));
+            return;
+        }
+        String usernameToBan = (String) data;
+        if ("superadmin".equalsIgnoreCase(usernameToBan.trim())) {
+            sendResponse(new Response("ERROR", "Không thể ban tài khoản Super Admin!", null));
+            return;
+        }
+        UserDAO.banUser(usernameToBan);
+        sendResponse(new Response("SUCCESS", "Đã khóa tài khoản thành công!", usernameToBan));
+        System.out.println("[ClientHandler] Admin '" + currentUser.getUsername() + "' đã khóa người dùng '" + usernameToBan + "'.");
+    }
+
+    private void handleUnbanUser(Object data) throws IOException {
+        if (currentUser == null || currentUser.getRole() != Role.ADMIN) {
+            sendResponse(new Response("ERROR", "Lỗi phân quyền: Chỉ Quản trị viên mới được mở khóa người dùng!", null));
+            return;
+        }
+        String usernameToUnban = (String) data;
+        UserDAO.unbanUser(usernameToUnban);
+        sendResponse(new Response("SUCCESS", "Đã mở khóa tài khoản thành công!", usernameToUnban));
+        System.out.println("[ClientHandler] Admin '" + currentUser.getUsername() + "' đã mở khóa người dùng '" + usernameToUnban + "'.");
     }
 
     // Gửi response đơn lẻ về cho client này (Thread-safe)

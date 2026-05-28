@@ -27,6 +27,14 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.stage.Stage;
+
 public class ItemManagementController {
 
     @FXML private TableView<Item> table;
@@ -50,6 +58,7 @@ public class ItemManagementController {
     @FXML private TextField txtEndTime;
     @FXML private TextField txtDescription;
     @FXML private Label lblSellerInfo;
+    @FXML private Label lblBalance;
 
     private static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -64,6 +73,8 @@ public class ItemManagementController {
             if (lblSellerInfo != null) {
                 lblSellerInfo.setText("Chào, " + currentSeller.getUsername());
             }
+            updateBalanceUI();
+            refreshUserBalance();
         }
 
         // --- 1. Liên kết các cột dữ liệu ---
@@ -119,6 +130,17 @@ public class ItemManagementController {
         data = FXCollections.observableArrayList();
         table.setItems(data);
         loadDataFromServer();
+
+        // --- Double-click để mở cửa sổ theo dõi cuộc đấu giá ---
+        table.setRowFactory(tv -> {
+            TableRow<Item> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    showAuctionWindow(row.getItem());
+                }
+            });
+            return row;
+        });
 
         // --- 4. Đăng ký nhận Broadcast ---
         broadcastListener = (type, payload) -> Platform.runLater(() -> handleServerBroadcast(type, payload));
@@ -203,6 +225,7 @@ public class ItemManagementController {
                 Auction finishedAuction = (Auction) payload;
                 MainApp.registerAuction(finishedAuction.getItem().getId(), finishedAuction);
                 table.refresh();
+                refreshUserBalance();
             }
             case "DELETE_AUCTION" -> {
                 String deletedItemId = (String) payload;
@@ -334,6 +357,161 @@ public class ItemManagementController {
         if (lblSellerInfo != null) {
             lblSellerInfo.setText("Chào, " + seller.getUsername());
         }
+        updateBalanceUI();
+    }
+
+    private void updateBalanceUI() {
+        if (currentSeller != null) {
+            Platform.runLater(() -> {
+                if (lblBalance != null) {
+                    lblBalance.setText(String.format("Số dư: %.2f $", currentSeller.getBalance()));
+                }
+            });
+        }
+    }
+
+    private void refreshUserBalance() {
+        if (currentSeller != null) {
+            new Thread(() -> {
+                try {
+                    Response res = NetworkClient.getInstance().sendRequestAndWait(
+                        new Request("GET_USER", currentSeller.getUsername()));
+                    if ("SUCCESS".equals(res.getStatus()) && res.getData() instanceof Seller s) {
+                        this.currentSeller = s;
+                        updateBalanceUI();
+                    }
+                } catch (Exception e) {
+                    System.err.println("[ItemManagementController] Lỗi cập nhật số dư: " + e.getMessage());
+                }
+            }).start();
+        }
+    }
+
+    @FXML
+    private void handleWithdraw() {
+        if (currentSeller == null) {
+            showAlert(Alert.AlertType.ERROR, "Lỗi", "Chưa xác định người dùng!");
+            return;
+        }
+        TextInputDialog dialog = new TextInputDialog("0");
+        dialog.setTitle("Rút tiền khỏi tài khoản");
+        dialog.setHeaderText("Số dư hiện tại: " + String.format("%.2f $", currentSeller.getBalance()));
+        dialog.setContentText("Nhập số tiền muốn rút ($):");
+        dialog.showAndWait().ifPresent(amountStr -> {
+            try {
+                double amount = Double.parseDouble(amountStr);
+                if (amount <= 0) throw new IllegalArgumentException("Số tiền rút phải lớn hơn 0!");
+                currentSeller.withdraw(amount);
+
+                // Chạy network trên background thread
+                new Thread(() -> {
+                    try {
+                        Response res = NetworkClient.getInstance().sendRequestAndWait(new Request("UPDATE_USER", currentSeller));
+                        Platform.runLater(() -> {
+                            if ("SUCCESS".equals(res.getStatus())) {
+                                updateBalanceUI();
+                                showAlert(Alert.AlertType.INFORMATION, "Thành công",
+                                    String.format("Đã rút thành công %.2f $ từ tài khoản.", amount));
+                            } else {
+                                showAlert(Alert.AlertType.ERROR, "Lỗi Server", res.getMessage());
+                            }
+                        });
+                    } catch (Exception e) {
+                        Platform.runLater(() ->
+                            showAlert(Alert.AlertType.ERROR, "Lỗi hệ thống", e.getMessage()));
+                    }
+                }).start();
+            } catch (NumberFormatException e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Vui lòng nhập một con số hợp lệ!");
+            } catch (IllegalArgumentException e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", e.getMessage());
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi hệ thống", e.getMessage());
+            }
+        });
+    }
+
+    private void showAuctionWindow(Item item) {
+        Auction auction = MainApp.getAuctionForItem(item);
+        if (auction == null) return;
+
+        Stage stage = new Stage();
+        stage.setTitle("Theo dõi đấu giá: " + item.getName());
+
+        // ===== ROOT =====
+        VBox root = new VBox(0);
+        root.getStylesheets().add(getClass().getResource("/com/auction/client/css/styles.css").toExternalForm());
+        root.setStyle("-fx-background-color: #f8fafc;");
+
+        // ===== HEADER =====
+        HBox header = new HBox();
+        header.getStyleClass().add("auction-header");
+        Label lblTitle = new Label("🏛 THEO DÕI ĐẤU GIÁ (SELLER)");
+        lblTitle.getStyleClass().add("auction-title");
+        Label lblItemName = new Label(item.getName());
+        lblItemName.getStyleClass().add("auction-item-name");
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        header.getChildren().addAll(lblTitle, spacer, lblItemName);
+
+        // ===== BODY =====
+        VBox body = new VBox(14);
+        body.setPadding(new Insets(20));
+        VBox.setVgrow(body, Priority.ALWAYS);
+
+        // Card: Thông tin phiên
+        VBox infoCard = new VBox(8);
+        infoCard.getStyleClass().add("auction-card");
+        Label lblInfoTitle = new Label("📋 Thông tin phiên đấu giá");
+        lblInfoTitle.getStyleClass().add("auction-section-title");
+        TextArea txtAuctionDetails = new TextArea();
+        txtAuctionDetails.setEditable(false);
+        txtAuctionDetails.getStyleClass().add("auction-details");
+        txtAuctionDetails.setPrefHeight(220);
+        txtAuctionDetails.setText(auction.getInfo());
+        infoCard.getChildren().addAll(lblInfoTitle, txtAuctionDetails);
+
+        // Card: Giá hiện tại + Thông báo Người Bán
+        VBox bidCard = new VBox(12);
+        bidCard.getStyleClass().add("auction-card");
+
+        Label lblPriceTitle = new Label("💰 Thông tin giá");
+        lblPriceTitle.getStyleClass().add("auction-section-title");
+
+        HBox priceRow = new HBox(10);
+        priceRow.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+        Label lblPriceStatic = new Label("Giá hiện tại:");
+        lblPriceStatic.getStyleClass().add("auction-label");
+        Label lblCurrentPrice = new Label(String.format("%.2f $", auction.getCurrentPrice()));
+        lblCurrentPrice.getStyleClass().add("auction-price");
+        priceRow.getChildren().addAll(lblPriceStatic, lblCurrentPrice);
+
+        Label lblWarning = new Label("⚠ Bạn là Người bán sản phẩm này. Bạn chỉ được phép theo dõi cuộc đấu giá và không thể tham gia đặt giá hoặc cấu hình đấu giá tự động.");
+        lblWarning.getStyleClass().add("auction-label");
+        lblWarning.setStyle("-fx-text-fill: #e11d48; -fx-font-weight: bold;");
+        lblWarning.setWrapText(true);
+
+        bidCard.getChildren().addAll(lblPriceTitle, priceRow, lblWarning);
+
+        body.getChildren().addAll(infoCard, bidCard);
+        root.getChildren().addAll(header, body);
+
+        // ===== TIMER cập nhật realtime =====
+        Timeline detailTimer = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            Auction latest = MainApp.getAuctionForItem(item);
+            if (latest != null) {
+                txtAuctionDetails.setText(latest.getInfo());
+                lblCurrentPrice.setText(String.format("%.2f $", latest.getCurrentPrice()));
+            }
+        }));
+        detailTimer.setCycleCount(Animation.INDEFINITE);
+        detailTimer.play();
+        stage.setOnCloseRequest(e -> detailTimer.stop());
+
+        Scene scene = new Scene(root, 520, 520);
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
     }
 
     private LocalDateTime parseDateTime(String text, LocalDateTime defaultValue) {

@@ -11,6 +11,8 @@
             <Label text="|  Quản lý Người Bán" styleClass="subtitle-label"/>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="lblSellerInfo" text="Chào, Seller" styleClass="label" style="-fx-font-weight: bold;"/>
+            <Label fx:id="lblBalance" text="Số dư: 0.00 $" styleClass="label" style="-fx-font-weight: bold; -fx-text-fill: #10b981;"/>
+            <Button text="Rút tiền" onAction="#handleWithdraw" styleClass="button" style="-fx-background-color: #3b82f6;"/>
             <Button text="Đăng xuất" onAction="#handleLogout" styleClass="button-danger"/>
         </HBox>
     </top>
