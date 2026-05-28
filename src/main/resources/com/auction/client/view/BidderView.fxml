@@ -14,7 +14,10 @@
             <Label text="•" styleClass="subtitle-label"/>
             <Label text="Số dư:" styleClass="label"/>
             <Label fx:id="lblBalance" text="0.00 $" style="-fx-text-fill: #10b981; -fx-font-weight: bold; -fx-font-size: 15px;"/>
+            <Label text="Đóng băng:" styleClass="label"/>
+            <Label fx:id="lblFrozenBalance" text="0.00 $" style="-fx-text-fill: #f59e0b; -fx-font-weight: bold; -fx-font-size: 15px;"/>
             <Button text="Nạp tiền" onAction="#handleTopUp" styleClass="button-link"/>
+            <Button text="Rút tiền" onAction="#handleWithdraw" styleClass="button-link"/>
             <Button text="Đăng xuất" onAction="#handleLogout" styleClass="button-danger"/>
         </HBox>
     </top>

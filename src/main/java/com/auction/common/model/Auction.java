@@ -237,6 +237,12 @@ public class Auction implements Serializable {
         sb.append("Trạng thái: ").append(getStatusDisplay()).append("\n\n");
         sb.append("--- LỊCH SỬ ĐẶT GIÁ LUỒNG THỜI GIAN ---\n");
 
+        if ("FINISHED".equals(getStatusDisplay()) && !bidList.isEmpty()) {
+            BidTransaction winBid = bidList.get(bidList.size() - 1);
+            sb.append("🏆 NGƯỜI CHIẾN THẮNG: ").append(winBid.getBidderName())
+              .append(" với mức giá ").append(winBid.getAmount()).append(" $\n\n");
+        }
+
         if (bidList.isEmpty()) {
             sb.append("- Chưa có người đặt giá cho sản phẩm này.\n");
         } else {

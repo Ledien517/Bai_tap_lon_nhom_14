@@ -35,7 +35,7 @@ public class BidderController {
     @FXML private TableColumn<Item, String> idCol, typeCol, nameCol, statusCol, sellerCol, startTimeCol, endTimeCol;
     @FXML private TableColumn<Item, Double> priceCol;
     @FXML private TableColumn<Item, Double> minIncCol;
-    @FXML private Label lblUsername, lblBalance, lblItemCount;
+    @FXML private Label lblUsername, lblBalance, lblFrozenBalance, lblItemCount;
     @FXML private TextField txtSearch;
 
     private static final DateTimeFormatter DT_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -136,6 +136,24 @@ public class BidderController {
         };
     }
 
+    private void sortAuctions() {
+        FXCollections.sort(data, (i1, i2) -> {
+            Auction a1 = MainApp.getAuctionForItem(i1);
+            Auction a2 = MainApp.getAuctionForItem(i2);
+            boolean a1Finished = a1 != null && "FINISHED".equals(a1.getStatusDisplay());
+            boolean a2Finished = a2 != null && "FINISHED".equals(a2.getStatusDisplay());
+            
+            if (a1Finished && !a2Finished) return 1;
+            if (!a1Finished && a2Finished) return -1;
+            
+            // Nếu cùng trạng thái, cái nào mới diễn ra xếp trước
+            if (i1.getStartTime() != null && i2.getStartTime() != null) {
+                return i2.getStartTime().compareTo(i1.getStartTime());
+            }
+            return 0;
+        });
+    }
+
     @SuppressWarnings("unchecked")
     private void loadDataFromServer() {
         // Chạy network trên background thread để không làm đóng băng giao diện
@@ -150,6 +168,7 @@ public class BidderController {
                             MainApp.registerAuction(auction.getItem().getId(), auction);
                             data.add(auction.getItem());
                         }
+                        sortAuctions();
                         table.refresh();
                         updateItemCount();
                     } else {
@@ -167,6 +186,7 @@ public class BidderController {
         this.currentBidder = bidder;
         if (lblUsername != null) lblUsername.setText("Chào, " + bidder.getUsername());
         if (lblBalance  != null) lblBalance.setText(String.format("%.2f $", bidder.getAvailableBalance()));
+        if (lblFrozenBalance != null) lblFrozenBalance.setText(String.format("%.2f $", bidder.getFrozenBalance()));
     }
 
     @FXML
@@ -196,6 +216,7 @@ public class BidderController {
                             MainApp.registerAuction(auction.getItem().getId(), auction);
                             data.add(auction.getItem());
                         }
+                        sortAuctions();
                         table.refresh();
                         updateItemCount();
                     } else {
@@ -232,6 +253,7 @@ public class BidderController {
                             MainApp.registerAuction(auction.getItem().getId(), auction);
                             data.add(auction.getItem());
                         }
+                        sortAuctions();
                         table.refresh();
                         updateItemCount();
                         if (data.isEmpty()) {
@@ -268,6 +290,47 @@ public class BidderController {
                                 updateBalanceUI();
                                 showAlert(Alert.AlertType.INFORMATION, "Thành công",
                                     String.format("Đã nạp thành công %.2f $ vào tài khoản.", amount));
+                            } else {
+                                showAlert(Alert.AlertType.ERROR, "Lỗi Server", res.getMessage());
+                            }
+                        });
+                    } catch (Exception e) {
+                        Platform.runLater(() ->
+                            showAlert(Alert.AlertType.ERROR, "Lỗi hệ thống", e.getMessage()));
+                    }
+                }).start();
+            } catch (NumberFormatException e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Vui lòng nhập một con số hợp lệ!");
+            } catch (IllegalArgumentException e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi", e.getMessage());
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Lỗi hệ thống", e.getMessage());
+            }
+        });
+    }
+
+    @FXML
+    private void handleWithdraw(ActionEvent event) {
+        if (currentBidder == null) { showAlert(Alert.AlertType.ERROR, "Lỗi", "Chưa xác định người dùng!"); return; }
+        TextInputDialog dialog = new TextInputDialog("0");
+        dialog.setTitle("Rút tiền khỏi tài khoản");
+        dialog.setHeaderText("Số dư khả dụng hiện tại: " + String.format("%.2f $", currentBidder.getAvailableBalance()));
+        dialog.setContentText("Nhập số tiền muốn rút ($):");
+        dialog.showAndWait().ifPresent(amountStr -> {
+            try {
+                double amount = Double.parseDouble(amountStr);
+                if (amount <= 0) throw new IllegalArgumentException("Số tiền phải lớn hơn 0!");
+                currentBidder.withdraw(amount);
+
+                // Chạy network trên background thread
+                new Thread(() -> {
+                    try {
+                        Response res = NetworkClient.getInstance().sendRequestAndWait(new Request("UPDATE_USER", currentBidder));
+                        Platform.runLater(() -> {
+                            if ("SUCCESS".equals(res.getStatus())) {
+                                updateBalanceUI();
+                                showAlert(Alert.AlertType.INFORMATION, "Thành công",
+                                    String.format("Đã rút thành công %.2f $ từ tài khoản.", amount));
                             } else {
                                 showAlert(Alert.AlertType.ERROR, "Lỗi Server", res.getMessage());
                             }
@@ -508,6 +571,7 @@ public class BidderController {
                 MainApp.registerAuction(newItem.getId(), newAuction);
                 boolean exists = data.stream().anyMatch(i -> i.getId().equals(newItem.getId()));
                 if (!exists) data.add(newItem);
+                sortAuctions();
                 table.refresh(); updateItemCount();
             }
             case "BID_UPDATE" -> {
@@ -520,16 +584,19 @@ public class BidderController {
                         break;
                     }
                 }
+                sortAuctions();
                 table.refresh(); refreshUserBalance();
             }
             case "AUCTION_FINISHED" -> {
                 Auction finishedAuction = (Auction) payload;
                 MainApp.registerAuction(finishedAuction.getItem().getId(), finishedAuction);
+                sortAuctions();
                 table.refresh(); refreshUserBalance();
             }
             case "DELETE_AUCTION" -> {
                 String deletedItemId = (String) payload;
                 data.removeIf(item -> item.getId().equals(deletedItemId));
+                sortAuctions();
                 table.refresh(); updateItemCount();
             }
         }
@@ -552,8 +619,10 @@ public class BidderController {
     }
 
     private void updateBalanceUI() {
-        if (currentBidder != null && lblBalance != null)
-            lblBalance.setText(String.format("%.2f $", currentBidder.getAvailableBalance()));
+        if (currentBidder != null) {
+            if (lblBalance != null) lblBalance.setText(String.format("%.2f $", currentBidder.getAvailableBalance()));
+            if (lblFrozenBalance != null) lblFrozenBalance.setText(String.format("%.2f $", currentBidder.getFrozenBalance()));
+        }
     }
 
     private void updateItemCount() {
