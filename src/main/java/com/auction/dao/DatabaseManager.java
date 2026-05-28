@@ -35,9 +35,20 @@ public class DatabaseManager {
             String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
                     "username VARCHAR(255) PRIMARY KEY, " +
                     "password VARCHAR(255) NOT NULL, " +
-                    "role VARCHAR(50) NOT NULL" +
+                    "role VARCHAR(50) NOT NULL, " +
+                    "available_balance DOUBLE DEFAULT 0, " +
+                    "frozen_balance DOUBLE DEFAULT 0" +
                     ")";
             stmt.executeUpdate(createUsersTable);
+            
+            // Cập nhật bảng users (cho các DB cũ chưa có cột này)
+            try {
+                stmt.executeUpdate("ALTER TABLE users ADD COLUMN available_balance DOUBLE DEFAULT 0");
+                stmt.executeUpdate("ALTER TABLE users ADD COLUMN frozen_balance DOUBLE DEFAULT 0");
+            } catch (SQLException ignored) {
+                // Ignore if columns already exist
+            }
+
 
             // 2. Tạo bảng Items
             String createItemsTable = "CREATE TABLE IF NOT EXISTS items (" +

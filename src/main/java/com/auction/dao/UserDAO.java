@@ -36,7 +36,9 @@ public class UserDAO {
                     String roleStr = rs.getString("role");
                     Role role = Role.valueOf(roleStr);
                     if (role == Role.BIDDER) {
-                        return new Bidder(rs.getString("username"), pass);
+                        double avail = rs.getDouble("available_balance");
+                        double frozen = rs.getDouble("frozen_balance");
+                        return new Bidder(rs.getString("username"), pass, avail, frozen);
                     } else if (role == Role.SELLER) {
                         return new Seller(rs.getString("username"), pass);
                     }
@@ -50,15 +52,29 @@ public class UserDAO {
 
     public static synchronized void saveUser(User user) {
         if (user == null || user.getUsername() == null) return;
-        String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?) " +
-                     "ON DUPLICATE KEY UPDATE password = ?, role = ?";
+        String sql = "INSERT INTO users (username, password, role, available_balance, frozen_balance) VALUES (?, ?, ?, ?, ?) " +
+                     "ON DUPLICATE KEY UPDATE password = ?, role = ?, available_balance = ?, frozen_balance = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, user.getUsername().toLowerCase());
             pstmt.setString(2, user.getPassword());
             pstmt.setString(3, user.getRole().name());
-            pstmt.setString(4, user.getPassword());
-            pstmt.setString(5, user.getRole().name());
+            
+            double avail = 0;
+            double frozen = 0;
+            if (user instanceof Bidder) {
+                Bidder b = (Bidder) user;
+                avail = b.getAvailableBalance();
+                frozen = b.getFrozenBalance();
+            }
+            pstmt.setDouble(4, avail);
+            pstmt.setDouble(5, frozen);
+            
+            pstmt.setString(6, user.getPassword());
+            pstmt.setString(7, user.getRole().name());
+            pstmt.setDouble(8, avail);
+            pstmt.setDouble(9, frozen);
+            
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("[UserDAO Lỗi] saveUser: " + e.getMessage());

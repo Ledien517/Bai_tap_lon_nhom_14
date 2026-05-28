@@ -40,8 +40,8 @@
         @Override
         public void start(Stage stage) throws Exception {
             try {
-                String host = "zephyr.proxy.rlwy.net";
-                int port = 51807;
+                String host = "127.0.0.1";
+                int port = 8888;
                 NetworkClient.getInstance().connect(host, port);
                 System.out.println("[AutoConfig] Đã kết nối tới Server trên Railway: " + host + ":" + port);
             } catch (Exception e) {

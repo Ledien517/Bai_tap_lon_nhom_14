@@ -9,6 +9,12 @@ public class Bidder extends User {
         super(username, password, Role.BIDDER);
     }
 
+    public Bidder(String username, String password, double availableBalance, double frozenBalance) {
+        super(username, password, Role.BIDDER);
+        this.availableBalance = availableBalance;
+        this.frozenBalance = frozenBalance;
+    }
+
     public synchronized double getAvailableBalance() {
         return availableBalance;
     }
