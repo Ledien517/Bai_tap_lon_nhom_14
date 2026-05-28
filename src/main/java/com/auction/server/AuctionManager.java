@@ -22,6 +22,17 @@ public class AuctionManager {
     private final MySqlItemDAO itemDAO = new MySqlItemDAO();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
+    static {
+        // Cung cấp logic lấy số dư từ Database cho common.model.Auction
+        Auction.balanceFetcher = bidder -> {
+            User user = UserDAO.getUser(bidder.getUsername());
+            if (user instanceof Bidder dbBidder) {
+                bidder.setAvailableBalance(dbBidder.getAvailableBalance());
+                bidder.setFrozenBalance(dbBidder.getFrozenBalance());
+            }
+        };
+    }
+
     private AuctionManager() {
         loadAuctionsFromDAO();
         startAuctionMonitor();
@@ -103,14 +114,11 @@ public class AuctionManager {
         // Cập nhật lại Database vì giá có thể đã bị thay đổi bởi AutoBidding
         itemDAO.updateItem(auction.getItem());
         
-        // Cập nhật số dư người thắng hiện tại và người bị vượt giá nếu có
-        List<BidTransaction> list = auction.getBidList();
-        if (!list.isEmpty()) {
-            BidTransaction lastBid = list.get(list.size() - 1);
-            UserDAO.saveUser(lastBid.getBidder());
-            if (list.size() > 1) {
-                BidTransaction previousBid = list.get(list.size() - 2);
-                UserDAO.saveUser(previousBid.getBidder());
+        // Cập nhật số dư của TẤT CẢ những người đã từng tham gia phiên đấu giá này
+        java.util.Set<String> savedUsers = new java.util.HashSet<>();
+        for (BidTransaction tx : auction.getBidList()) {
+            if (savedUsers.add(tx.getBidder().getUsername())) {
+                UserDAO.saveUser(tx.getBidder());
             }
         }
         // Cập nhật số dư người đăng ký AutoBid nếu có thay đổi
@@ -137,6 +145,16 @@ public class AuctionManager {
             throw new IllegalArgumentException("Không tìm thấy phiên đấu giá cho sản phẩm này!");
         }
 
+        // Đảm bảo lấy số dư thực tế từ DB, tránh trường hợp Client gửi số dư cũ hoặc gian lận
+        if (Auction.balanceFetcher != null) {
+            Auction.balanceFetcher.refreshBalance(bid.getBidder());
+        }
+
+        // Kiểm tra xem số tiền đặt có vượt quá số dư (thực tế từ DB) hay không
+        if (bid.getAmount() > bid.getBidder().getAvailableBalance()) {
+            throw new IllegalArgumentException("Số dư khả dụng không đủ!");
+        }
+
         // Thực hiện đặt giá (synchronized bên trong Auction.java)
         auction.placeBid(bid);
 
@@ -145,14 +163,13 @@ public class AuctionManager {
         // Không gọi item.getBidList().add(bid) ở đây nữa vì Auction.placeBid(bid) đã thêm trực tiếp vào item rồi.
         itemDAO.updateItem(item);
 
-        // Lưu thông tin số dư khả dụng/đóng băng mới của Bidder vào Database
-        UserDAO.saveUser(bid.getBidder());
-        
-        // Nếu có bidder cũ bị trả lại tiền đóng băng, ta cũng lưu lại thông tin bidder cũ đó
-        List<BidTransaction> list = auction.getBidList();
-        if (list.size() > 1) {
-            BidTransaction previousBid = list.get(list.size() - 2);
-            UserDAO.saveUser(previousBid.getBidder());
+        // Cập nhật số dư của TẤT CẢ những người đã từng tham gia phiên đấu giá này
+        // (Vì đấu giá tự động có thể làm thay đổi số dư của nhiều người liên tiếp)
+        java.util.Set<String> savedUsers = new java.util.HashSet<>();
+        for (BidTransaction tx : auction.getBidList()) {
+            if (savedUsers.add(tx.getBidder().getUsername())) {
+                UserDAO.saveUser(tx.getBidder());
+            }
         }
 
         System.out.println("[AuctionManager] Đặt giá thành công cho SP: " + itemId + " bởi " + bid.getBidderName());

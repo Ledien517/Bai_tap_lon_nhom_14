@@ -22,4 +22,17 @@ public abstract class User implements Serializable {
     public String getUsername() { return username; }
     public String getPassword() { return password; }
     public Role getRole() { return role; }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        User user = (User) obj;
+        return username.equals(user.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return username.hashCode();
+    }
 }

@@ -23,6 +23,14 @@ public class Bidder extends User {
         return frozenBalance;
     }
 
+    public void setAvailableBalance(double availableBalance) {
+        this.availableBalance = availableBalance;
+    }
+
+    public void setFrozenBalance(double frozenBalance) {
+        this.frozenBalance = frozenBalance;
+    }
+
     public synchronized void deposit(double amount) {
         if (amount <= 0) {
             throw new IllegalArgumentException("Số tiền nạp vào không hợp lệ!");

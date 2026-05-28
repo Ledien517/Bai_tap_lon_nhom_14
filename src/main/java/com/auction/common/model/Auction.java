@@ -11,6 +11,14 @@ import java.util.List;
 
 public class Auction implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    // Khai báo interface để lấy số dư mới nhất, giúp Auction (thuộc common)
+    // không bị phụ thuộc trực tiếp vào UserDAO (thuộc server)
+    public interface UserBalanceFetcher {
+        void refreshBalance(Bidder bidder);
+    }
+    public static transient UserBalanceFetcher balanceFetcher;
+
     private final Seller seller;
     private final Item item;
     private final double startingPrice;
@@ -177,6 +185,11 @@ public class Auction implements Serializable {
                     double finalPrice = Math.min(desiredPrice, autoBid.getMaxBid());
                     
                     try {
+                        // Tránh lỗi số dư cũ bị cache trong bộ nhớ: lấy số dư mới nhất từ DB
+                        if (balanceFetcher != null) {
+                            balanceFetcher.refreshBalance(autoBid.getBidder());
+                        }
+
                         BidTransaction newBid = new BidTransaction(autoBid.getBidder(), finalPrice);
                         processNewBid(newBid, lastBid);
                         System.out.println("[Auto-Bidding] Hệ thống tự đặt " + finalPrice + "$ cho " + autoBid.getBidder().getUsername());
