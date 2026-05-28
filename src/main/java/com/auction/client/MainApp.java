@@ -39,18 +39,22 @@
     
         @Override
         public void start(Stage stage) throws Exception {
-            try {
-                String host = "127.0.0.1";
-                int port = 8888;
-                NetworkClient.getInstance().connect(host, port);
-                System.out.println("[AutoConfig] Đã kết nối tới Server trên Railway: " + host + ":" + port);
-            } catch (Exception e) {
-                System.err.println("[MainApp Lỗi] Không thể kết nối tới Server: " + e.getMessage());
-            }
             primaryStage = stage;
             primaryStage.setTitle("Hệ thống Đấu giá Trực tuyến");
             switchScene("/com/auction/client/view/LoginView.fxml");
             primaryStage.show();
+
+            // Kết nối Server trên background thread để cửa sổ hiện lên ngay lập tức
+            new Thread(() -> {
+                try {
+                    String host = "127.0.0.1";
+                    int port = 8888;
+                    NetworkClient.getInstance().connect(host, port);
+                    System.out.println("[AutoConfig] Đã kết nối tới Server: " + host + ":" + port);
+                } catch (Exception e) {
+                    System.err.println("[MainApp Lỗi] Không thể kết nối tới Server: " + e.getMessage());
+                }
+            }).start();
         }
 
         @Override

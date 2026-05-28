@@ -5,8 +5,10 @@ import com.auction.client.NetworkClient;
 import com.auction.common.model.*;
 import com.auction.common.protocol.Request;
 import com.auction.common.protocol.Response;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -15,6 +17,7 @@ public class RegisterController {
     @FXML private TextField txtUsername;
     @FXML private PasswordField txtPassword;
     @FXML private ComboBox<Role> cbRole;
+    @FXML private Button btnRegister;
 
     @FXML
     public void initialize() {
@@ -34,30 +37,42 @@ public class RegisterController {
             return;
         }
 
-        try {
-            // 1. Áp dụng Đa hình (Polymorphism) để khởi tạo đúng loại User
-            // Sử dụng Switch Expression của Java 14+
-            User newUser = switch (selectedRole) {
-                case BIDDER -> new Bidder(username, password);
-                case SELLER -> new Seller(username, password);
-                default -> throw new IllegalArgumentException("Vai trò không hợp lệ!");
-            };
+        // Vô hiệu hóa nút để tránh nhấn nhiều lần
+        if (btnRegister != null) btnRegister.setDisable(true);
 
-            Response response = NetworkClient.getInstance().sendRequestAndWait(
-                new Request("REGISTER", newUser)
-            );
+        // Chạy network trên background thread
+        new Thread(() -> {
+            try {
+                // 1. Áp dụng Đa hình (Polymorphism) để khởi tạo đúng loại User
+                // Sử dụng Switch Expression của Java 14+
+                User newUser = switch (selectedRole) {
+                    case BIDDER -> new Bidder(username, password);
+                    case SELLER -> new Seller(username, password);
+                    default -> throw new IllegalArgumentException("Vai trò không hợp lệ!");
+                };
 
-            if ("SUCCESS".equals(response.getStatus())) {
-                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đăng ký thành công!\nVui lòng đăng nhập.");
-                handleGoToLogin(); // Tự động chuyển trang sau khi đăng ký thành công
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Thất bại", response.getMessage());
+                Response response = NetworkClient.getInstance().sendRequestAndWait(
+                    new Request("REGISTER", newUser)
+                );
+
+                Platform.runLater(() -> {
+                    if (btnRegister != null) btnRegister.setDisable(false);
+                    if ("SUCCESS".equals(response.getStatus())) {
+                        showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đăng ký thành công!\nVui lòng đăng nhập.");
+                        handleGoToLogin(); // Tự động chuyển trang sau khi đăng ký thành công
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Thất bại", response.getMessage());
+                    }
+                });
+
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    if (btnRegister != null) btnRegister.setDisable(false);
+                    // Bắt lỗi tổng quát và hiện lên màn hình thay vì in ngầm ra console
+                    showAlert(Alert.AlertType.ERROR, "Lỗi Hệ Thống", "Đã xảy ra lỗi: " + e.getMessage());
+                });
             }
-
-        } catch (Exception e) {
-            // Bắt lỗi tổng quát và hiện lên màn hình thay vì in ngầm ra console
-            showAlert(Alert.AlertType.ERROR, "Lỗi Hệ Thống", "Đã xảy ra lỗi: " + e.getMessage());
-        }
+        }).start();
     }
 
     @FXML

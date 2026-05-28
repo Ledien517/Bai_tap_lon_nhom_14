@@ -146,26 +146,32 @@ public class ItemManagementController {
 
     @SuppressWarnings("unchecked")
     private void loadDataFromServer() {
-        try {
-            Response response = NetworkClient.getInstance().sendRequestAndWait(new Request("GET_ITEMS", null));
-            if ("SUCCESS".equals(response.getStatus())) {
-                List<Auction> auctions = (List<Auction>) response.getData();
-                data.clear();
-                for (Auction auction : auctions) {
-                    MainApp.registerAuction(auction.getItem().getId(), auction);
-                    // Chỉ hiển thị sản phẩm của Seller đang đăng nhập
-                    if (currentSeller != null &&
-                        auction.getItem().getSeller().getUsername().equals(currentSeller.getUsername())) {
-                        data.add(auction.getItem());
+        // Chạy network trên background thread để không làm đóng băng giao diện
+        new Thread(() -> {
+            try {
+                Response response = NetworkClient.getInstance().sendRequestAndWait(new Request("GET_ITEMS", null));
+                Platform.runLater(() -> {
+                    if ("SUCCESS".equals(response.getStatus())) {
+                        List<Auction> auctions = (List<Auction>) response.getData();
+                        data.clear();
+                        for (Auction auction : auctions) {
+                            MainApp.registerAuction(auction.getItem().getId(), auction);
+                            // Chỉ hiển thị sản phẩm của Seller đang đăng nhập
+                            if (currentSeller != null &&
+                                auction.getItem().getSeller().getUsername().equals(currentSeller.getUsername())) {
+                                data.add(auction.getItem());
+                            }
+                        }
+                        table.refresh();
+                    } else {
+                        showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể lấy danh sách: " + response.getMessage());
                     }
-                }
-                table.refresh();
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", "Không thể lấy danh sách: " + response.getMessage());
+                });
+            } catch (Exception e) {
+                Platform.runLater(() ->
+                    showAlert(Alert.AlertType.ERROR, "Lỗi kết nối", e.getMessage()));
             }
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Lỗi kết nối", e.getMessage());
-        }
+        }).start();
     }
 
     private void handleServerBroadcast(String type, Object payload) {
@@ -242,13 +248,23 @@ public class ItemManagementController {
                 price, startTime, endTime, minIncrement, extraParam
             );
 
-            Response response = NetworkClient.getInstance().sendRequestAndWait(new Request("REGISTER_ITEM", newItem));
-            if ("SUCCESS".equals(response.getStatus())) {
-                showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã đăng ký sản phẩm đấu giá thành công!");
-                clearForm();
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Lỗi", response.getMessage());
-            }
+            // Chạy network trên background thread
+            new Thread(() -> {
+                try {
+                    Response response = NetworkClient.getInstance().sendRequestAndWait(new Request("REGISTER_ITEM", newItem));
+                    Platform.runLater(() -> {
+                        if ("SUCCESS".equals(response.getStatus())) {
+                            showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã đăng ký sản phẩm đấu giá thành công!");
+                            clearForm();
+                        } else {
+                            showAlert(Alert.AlertType.ERROR, "Lỗi", response.getMessage());
+                        }
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() ->
+                        showAlert(Alert.AlertType.ERROR, "Lỗi hệ thống", e.getMessage()));
+                }
+            }).start();
 
         } catch (NumberFormatException nfe) {
             showAlert(Alert.AlertType.ERROR, "Lỗi nhập liệu", "Giá và Bước giá phải là con số hợp lệ!");
@@ -274,18 +290,24 @@ public class ItemManagementController {
         Optional<ButtonType> result = confirm.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                Response response = NetworkClient.getInstance()
-                    .sendRequestAndWait(new Request("DELETE_ITEM", selected.getId()));
-                if ("SUCCESS".equals(response.getStatus())) {
-                    // Bảng sẽ tự cập nhật qua broadcast DELETE_AUCTION
-                    showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa sản phẩm khỏi hệ thống!");
-                } else {
-                    showAlert(Alert.AlertType.ERROR, "Lỗi", response.getMessage());
+            // Chạy network trên background thread
+            new Thread(() -> {
+                try {
+                    Response response = NetworkClient.getInstance()
+                        .sendRequestAndWait(new Request("DELETE_ITEM", selected.getId()));
+                    Platform.runLater(() -> {
+                        if ("SUCCESS".equals(response.getStatus())) {
+                            // Bảng sẽ tự cập nhật qua broadcast DELETE_AUCTION
+                            showAlert(Alert.AlertType.INFORMATION, "Thành công", "Đã xóa sản phẩm khỏi hệ thống!");
+                        } else {
+                            showAlert(Alert.AlertType.ERROR, "Lỗi", response.getMessage());
+                        }
+                    });
+                } catch (Exception e) {
+                    Platform.runLater(() ->
+                        showAlert(Alert.AlertType.ERROR, "Lỗi kết nối", e.getMessage()));
                 }
-            } catch (Exception e) {
-                showAlert(Alert.AlertType.ERROR, "Lỗi kết nối", e.getMessage());
-            }
+            }).start();
         }
     }
 

@@ -6,14 +6,17 @@ import com.auction.client.NetworkClient;
 import com.auction.common.model.User;
 import com.auction.common.protocol.Request;
 import com.auction.common.protocol.Response;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class LoginController {
     @FXML private TextField txtUsername;
     @FXML private PasswordField txtPassword;
+    @FXML private Button btnLogin;
 
     @FXML
     public void initialize() {}
@@ -29,35 +32,52 @@ public class LoginController {
             return;
         }
 
-        try {
-            Response response = NetworkClient.getInstance().sendRequestAndWait(
-                new Request("LOGIN", new String[]{username, password})
-            );
+        // Vô hiệu hóa nút để tránh nhấn nhiều lần
+        if (btnLogin != null) btnLogin.setDisable(true);
 
-            if ("SUCCESS".equals(response.getStatus())) {
-                User user = (User) response.getData();
-                showAlert(Alert.AlertType.INFORMATION, "Thành công",
-                    "Đăng nhập thành công!\nChào mừng "
-                        + user.getUsername() + " (" + user.getRole() + ")");
+        // Chạy network trên background thread để không làm đóng băng giao diện
+        new Thread(() -> {
+            try {
+                Response response = NetworkClient.getInstance().sendRequestAndWait(
+                    new Request("LOGIN", new String[]{username, password})
+                );
 
-                // Lưu user vào session trước khi chuyển màn hình
-                MainApp.setCurrentUser(user);
+                Platform.runLater(() -> {
+                    if (btnLogin != null) btnLogin.setDisable(false);
+                    try {
+                        if ("SUCCESS".equals(response.getStatus())) {
+                            User user = (User) response.getData();
+                            showAlert(Alert.AlertType.INFORMATION, "Thành công",
+                                "Đăng nhập thành công!\nChào mừng "
+                                    + user.getUsername() + " (" + user.getRole() + ")");
 
-                switch (user.getRole()) {
-                    case BIDDER -> MainApp.switchScene(
-                        "/com/auction/client/view/BidderView.fxml");
-                    case SELLER -> MainApp.switchScene(
-                        "/com/auction/client/view/ItemManagementView.fxml");
-                    default     -> MainApp.switchScene(
-                        "/com/auction/client/view/LoginView.fxml");
-                }
-            } else {
-                showAlert(Alert.AlertType.ERROR, "Thất bại", response.getMessage());
+                            // Lưu user vào session trước khi chuyển màn hình
+                            MainApp.setCurrentUser(user);
+
+                            switch (user.getRole()) {
+                                case BIDDER -> MainApp.switchScene(
+                                    "/com/auction/client/view/BidderView.fxml");
+                                case SELLER -> MainApp.switchScene(
+                                    "/com/auction/client/view/ItemManagementView.fxml");
+                                default     -> MainApp.switchScene(
+                                    "/com/auction/client/view/LoginView.fxml");
+                            }
+                        } else {
+                            showAlert(Alert.AlertType.ERROR, "Thất bại", response.getMessage());
+                        }
+                    } catch (Exception e) {
+                        showAlert(Alert.AlertType.ERROR, "Lỗi Hệ Thống",
+                            "Không thể xử lý đăng nhập: " + e.getMessage());
+                    }
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    if (btnLogin != null) btnLogin.setDisable(false);
+                    showAlert(Alert.AlertType.ERROR, "Lỗi Hệ Thống",
+                        "Không thể xử lý đăng nhập: " + e.getMessage());
+                });
             }
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Lỗi Hệ Thống",
-                "Không thể xử lý đăng nhập: " + e.getMessage());
-        }
+        }).start();
     }
 
     @FXML

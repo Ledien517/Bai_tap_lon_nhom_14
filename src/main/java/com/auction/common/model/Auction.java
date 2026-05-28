@@ -205,16 +205,15 @@ public class Auction implements Serializable {
 
         if (!isFinished) {
             isFinished = true;
+            winProcessed = true; // Đánh dấu đã xử lý để Monitor không lặp lại
+
             if (bidList.isEmpty()) {
                 return;
             }
 
-            if (!winProcessed) {
-                BidTransaction winBid = bidList.get(bidList.size() - 1);
-                seller.receiveBalance(currentPrice);
-                winBid.getBidder().paid(currentPrice);
-                winProcessed = true;
-            }
+            BidTransaction winBid = bidList.get(bidList.size() - 1);
+            seller.receiveBalance(currentPrice);
+            winBid.getBidder().paid(currentPrice);
         }
     }
 
